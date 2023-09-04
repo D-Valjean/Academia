@@ -1,0 +1,49 @@
+{% if user.is_authenticated %}
+    {% if group_name == 'Estudiantes' %}
+        <header class="p-3 text-bg-dark bg-primary">
+    {% elif group_name == 'Profesores' %}
+        <header class="p-3 text-bg-dark bg-success">
+    {% elif group_name == 'Director' %}
+        <header class="p-3 text-bg-dark bg-secondary">
+    {% elif group_name == 'Administrativos' %}
+        <header class="p-3 text-bg-dark bg-danger">
+    {% endif %}
+
+{% else %}
+    <header class="p-3 text-bg-dark bg-primary">
+{% endif %}
+<div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+            ACADEMIA
+        </a>
+        {% if user.is_authenticated %}
+            {% if group_name == 'Estudiantes' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 text-bg-primary">
+            {% elif group_name == 'Profesores' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 text-bg-success">
+            {% elif group_name == 'Director' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 text-bg-secondary">
+            {% elif group_name == 'Administrativos' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 text-bg-danger">
+            {% endif %}
+            
+        {% else %}
+            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 text-bg-primary">
+        {% endif %}
+            <li><a href="{% url 'home' %}" class="nav-link px-2 text-secondary">Home</a></li>
+            <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-black">Pricing</a></li>
+            <li><a href="#" class="nav-link px-2 text-black">FAQs</a></li>
+            <li><a href="#" class="nav-link px-2 text-black">About</a></li>
+        </ul>
+        <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+            <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..."
+                aria-label="Search">
+        </form>
+        <div class="text-end">
+            <button type="button" class="btn btn-outline-light me-2">Login</button>
+            <button type="button" class="btn btn-warning">Sign-up</button>
+        </div>
+    </div>
+</div>
+</header>
