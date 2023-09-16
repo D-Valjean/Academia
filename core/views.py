@@ -23,6 +23,7 @@ def plural_to_singular(plural):
 class CustumTemplateView(TemplateView):
     group_name = None
     group_name_singular = None
+    color = None
 
     def get_contex_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,10 +31,20 @@ class CustumTemplateView(TemplateView):
         if user.is_authenticated:
             group = Group.objects
             if group:
+                if group.name == 'estudiantes':
+                    self.color = 'bg-primary'
+                elif group.name == 'profesores':
+                    self.color = 'bg-success'
+                elif group.name == 'director':
+                    self.color = 'bg-secondary'
+                elif group.name == 'administrativos':
+                    self.color = 'bg-danger'
+
                 self.group_name = group.name
                 self.group_name_singular = plural_to_singular(group.name)
         context['group_name'] = self.group_name
         context['group_name_singular'] = self.group_name_singular
+        context['color'] = self.color
 
         return context
 
