@@ -8,11 +8,10 @@ from .models import Profile
 def add_user_to_group(sender, instance, created, **kwargs):
     if created:
         try:
-            perfil1 = Group.objects.get(name='Estudiantes')
+            group1 = Group.objects.get(name='estudiantes')
         except Group.DoesNotExist:
-            perfil1 = Group.objects.create(name='Estudiantes')
-            perfil2 = Group.objects.create(name='Profesores')
-            perfil3 = Group.objects.create(name='Director')
-            perfil4 = Group.objects.create(name='Administrativos')
-
-        instance.user.groups.add(perfil1)
+            group1 = Group.objects.create(name='estudiantes')
+            group2 = Group.objects.create(name='profesores')
+            group3 = Group.objects.create(name='director')
+            group4 = Group.objects.create(name='administrativos')
+        instance.user.groups.add(group1)

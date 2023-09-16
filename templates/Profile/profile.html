@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container my-3">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border rounded-2 shadow p-3 mb-3">
+                    <div class="card-body">
+                        <img class="img-thumbnail rounded-circle mb-3" src="" alt="{{ user.profile.image.url }}" style="width: 100px;">
+                        <h2 class="text-center">{{ user.first_name }} {{ user.last_name }}</h2>
+                        <h5>{{group_name | capfirst}}</h5>
+                        <hr>
+                        <p><strong>Nombre de Usuario:</strong> {{ user.username }}</p>
+                        <p><strong>Domicilio</strong>{{ user.address }}</p>
+                        <p><strong>Telefono</strong>{{ user.phone }}</p>
+                        <p><strong>Localidad</strong>{{ user.location }}</p>
+                        <hr>
+                        <a class="btn btn-outline-secondary w-100 mb-1" href="">Editar Perfil</a>
+                        <a class="btn btn-outline-danger w-100" href="{% url 'logout' %}">Cerrar sesion</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card border rounded-2 shadow p-3 mb-3">
+                    <div class="card-body">
+                        {% comment %} Evaluar grupo al que pertecence {% endcomment %}
+                        {% if group_name == 'estudiantes' %}
+                            {% include 'profile/estudiantes.html' %}
+                        {% elif group_name == 'profesores' %}
+                            {% include 'profile/profesores.html' %}
+                        {% elif group_name == 'director' %}
+                            {% include 'profile/director.html' %}
+                        {% elif group_name == 'administrativos' %}
+                            {% include 'profile/administrativos.html' %}
+                        {% endif %}
+                    </div>
+            </div>
+        </div>
+    </div>
+{% endblock  %}

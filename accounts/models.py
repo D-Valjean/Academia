@@ -6,17 +6,19 @@ from django.db.models.signals import post_save
 
 class Profile(models.Model):
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name='profile', verbose_name='usuario')
-    img = models.ImageField(default='users/default.jpg', upload_to='users/',
-                            verbose_name='imagen', blank=True, null=True)
+        User, on_delete=models.CASCADE, related_name='profile', verbose_name='Usuario')
+    image = models.ImageField(
+        default='default.png', upload_to='users/', verbose_name='Imagen de perfil')
     address = models.CharField(
-        max_length=150, verbose_name='dirección', blank=True, null=True)
-    phone = models.CharField(
-        max_length=50, verbose_name='teléfono', blank=True, null=True)
+        max_length=150, null=True, blank=True, verbose_name='Dirección')
+    location = models.CharField(
+        max_length=150, null=True, blank=True, verbose_name='Localidad')
+    telephone = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name='Teléfono')
 
     class Meta:
-        verbose_name = 'Perfil'
-        verbose_name_plural = 'Perfiles'
+        verbose_name = 'perfil'
+        verbose_name_plural = 'perfiles'
         ordering = ['-id']
 
     def str(self):

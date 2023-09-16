@@ -11,7 +11,7 @@ class Course(models.Model):
     description = models.TextField(
         verbose_name='Descripción', blank=True, null=True)
     teacher = models.ForeignKey(
-        User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'Profesores'}, verbose_name='profesor')
+        User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesores'}, verbose_name='profesor')
     class_quantity = models.PositiveIntegerField(
         default=0, verbose_name='Cantidad de clases')
 
@@ -29,7 +29,7 @@ class Registration(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
     student = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='student_registration', limit_choices_to={'groups__name': 'Estudiantes'}, verbose_name='estudiante')
+        User, on_delete=models.CASCADE, related_name='student_registration', limit_choices_to={'groups__name': 'estudiantes'}, verbose_name='estudiante')
     enable = models.BooleanField(default=True, verbose_name='Alumno Regular')
 
     def __str__(self):
@@ -46,7 +46,7 @@ class Attendance(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
     student = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='Attendance', limit_choices_to={'groups__name': 'Estudiantes'}, verbose_name='estudiante')
+        User, on_delete=models.CASCADE, related_name='Attendance', limit_choices_to={'groups__name': 'estudiantes'}, verbose_name='estudiante')
     date = models.DateField(null=True, blank=True, verbose_name='Fecha')
     present = models.BooleanField(
         default=False, blank=True, null=True, verbose_name='Presente')
@@ -83,7 +83,7 @@ class Mark(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
     student = models.ForeignKey(
-        User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'Estudiantes'}, verbose_name='estudiantes')
+        User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'estudiantes'}, verbose_name='estudiantes')
     mark_1 = models.PositiveIntegerField(
         null=True, blank=True, verbose_name='Nota 1')
     mark_2 = models.PositiveIntegerField(
