@@ -5,17 +5,25 @@
             <div class="col-md-4">
                 <div class="card border rounded-2 shadow p-3 mb-3">
                     <div class="card-body">
-                        <img class="img-thumbnail rounded-circle mb-3" src="" alt="{{ user.profile.image.url }}" style="width: 100px;">
-                        <h2 class="text-center">{{ user.first_name }} {{ user.last_name }}</h2>
-                        <h5>{{group_name | capfirst}}</h5>
+                        <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 100px;">
+                        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+                        <h4><span class="badge {{ color }}">{{ group_name_singular | capfirst }}</span></h4>
                         <hr>
-                        <p><strong>Nombre de Usuario:</strong> {{ user.username }}</p>
-                        <p><strong>Domicilio</strong>{{ user.address }}</p>
-                        <p><strong>Telefono</strong>{{ user.phone }}</p>
-                        <p><strong>Localidad</strong>{{ user.location }}</p>
+                        <p><strong>Nombre de usuario: </strong>{{ user.username}}</p>
+                        <p><strong>Domicilio: </strong>{{ user.profile.address }} </p>
+                        <p><strong>Localidad: </strong>{{ user.profile.location }} </p>
+                        <p><strong>Teléfono:  </strong>{{ user.profile.telephone }}</p>
+                        <p><strong>Correo electrónico:  </strong>{{ user.email }}</p>
                         <hr>
-                        <a class="btn btn-outline-secondary w-100 mb-1" href="">Editar Perfil</a>
-                        <a class="btn btn-outline-danger w-100" href="{% url 'logout' %}">Cerrar sesion</a>
+
+                        {% if request.user.username == 'admin'  %}
+                            <a class="btn btn-warning w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
+                        {% endif %}
+
+                        <button type="button" class="btn btn-outline-secondary w-100 mb-1" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            Editar Perfil
+                        </button>
+                        <a class="btn btn-danger w-100" href="{% url 'logout' %}">Cerrar sesión</a>
                     </div>
                 </div>
             </div>

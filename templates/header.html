@@ -46,7 +46,7 @@
         <div class="text-end">
             {% if user.is_authenticated %}
                 <li style="list-style: none;">
-                    <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name|capfirst }} | {{ user.username }}</a>
+                    <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name_singular | capfirst }} | {{ user.username }}</a>
                 </li>
             {%else %}
                 <a class="btn btn-outline-light me-2" href="{% url 'login' %}">Iniciar Sesion</a>
