@@ -5,7 +5,7 @@ from .models import Profile
 
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'address', 'user_group']
-    search_fields = ['user__username', 'user__group__name']
+    search_fields = ['user__username', 'user__groups__name']
     list_filter = ['user__groups', 'user__username']
 
     def user_group(self, obj):

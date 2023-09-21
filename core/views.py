@@ -5,55 +5,91 @@ from django.contrib.auth.models import Group
 from .forms import RegisterForm
 from django.views import View
 from django.utils.decorators import method_decorator
+from .forms import RegisterForm, ProfileForm, UserForm
+from django.utils.decorators import method_decorator
 # Create your views here.
 
 
 def plural_to_singular(plural):
     # Diccionario de palabras
     plural_singular = {
-        'estudiantes': 'estudiante',
-        'profesores': 'profesor',
-        'director': 'director',
-        'administrativos': 'administrativo'
+        "estudiantes": "estudiante",
+        "profesores": "profesor",
+        "preceptores": "preceptor",
+        "administrativos": "administrativo",
     }
 
     return plural_singular.get(plural, "error")
 
 
-class CustumTemplateView(TemplateView):
-    group_name = None
-    group_name_singular = None
-    color = None
+def add_group_name_to_context(view_class):
+    original_dispatch = view_class.dispatch
 
-    def get_contex_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user  # ruser = request.user from the request
-        if user.is_authenticated:
-            group = Group.objects
-            if group:
-                if group.name == 'estudiantes':
-                    self.color = 'bg-primary'
-                elif group.name == 'profesores':
-                    self.color = 'bg-success'
-                elif group.name == 'director':
-                    self.color = 'bg-secondary'
-                elif group.name == 'administrativos':
-                    self.color = 'bg-danger'
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        group = user.groups.first()
+        group_name = None
+        group_name_singular = None
+        color = None
+        if group:
+            if group.name == 'estudiantes':
+                color = 'bg-primary'
+            elif group.name == 'profesores':
+                color = 'bg-success'
+            elif group.name == 'director':
+                color = 'bg-secondary'
+            elif group.name == 'administrativos':
+                color = 'bg-info'
 
-                self.group_name = group.name
-                self.group_name_singular = plural_to_singular(group.name)
-        context['group_name'] = self.group_name
-        context['group_name_singular'] = self.group_name_singular
-        context['color'] = self.color
+            group_name = group.name
+            group_name_singular = plural_to_singular(group.name)
+        context = {
+            'group_name': group_name,
+            'group_name_singular': group_name_singular,
+            'color': color
+        }
+        self.extra_context = context
+        return original_dispatch(self, request, *args, **kwargs)
 
-        return context
+    view_class.dispatch = dispatch
+    return view_class
 
 
-class HomeView(CustumTemplateView):
+# class CustumTemplateView(TemplateView):
+#     group_name = None
+#     group_name_singular = None
+#     color = None
+
+#     def get_contex_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         user = self.request.user  # ruser = request.user from the request
+#         if user.is_authenticated:
+#             group = Group.objects
+#             if group:
+#                 if group.name == 'estudiantes':
+#                     self.color = 'bg-primary'
+#                 elif group.name == 'profesores':
+#                     self.color = 'bg-success'
+#                 elif group.name == 'director':
+#                     self.color = 'bg-secondary'
+#                 elif group.name == 'administrativos':
+#                     self.color = 'bg-danger'
+
+#                 self.group_name = group.name
+#                 self.group_name_singular = plural_to_singular(group.name)
+#         context['group_name'] = self.group_name
+#         context['group_name_singular'] = self.group_name_singular
+#         context['color'] = self.color
+
+#         return context
+
+@add_group_name_to_context
+class HomeView(TemplateView):
     template_name = 'home.html'
 
 
-class PricingView(CustumTemplateView):
+@add_group_name_to_context
+class PricingView(TemplateView):
     template_name = 'pricing.html'
 
 
@@ -82,11 +118,31 @@ class RegisterView(View):
 
 
 # Pagina de Perfil
-class ProfileView(CustumTemplateView):
+@add_group_name_to_context
+class ProfileView(TemplateView):
     template_name = 'Profile/profile.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        context['user_form'] = UserForm(instance=user)
+        context['profile_form'] = ProfileForm(instance=user.profile)
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = ProfileForm(
+            request.POST, request.FILES, instance=user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+
+            return redirect('profile')
+
+        contex = self.get_context_data()
+        contex['user_form'] = user_form
+        contex['profile_form'] = profile_form
+        return render(request, 'Profile/profile.html', contex)

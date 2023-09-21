@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from accounts.models import Profile
 
 
 class LoginForm(AuthenticationForm):
@@ -24,3 +25,17 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError(
                 'El correo ya se encuentra registrado')
         return email_field
+
+
+# Modulo para que el User pueda Modificar algunos campos de su perfil
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name',
+                  'last_name']
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile  # <-- Importar de accounts para que el usuario pueda modificar sus datos
+        fields = ['image', 'address', 'location', 'telephone']
