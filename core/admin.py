@@ -4,7 +4,7 @@ from .models import Course, Registration, Attendance, Mark
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'teacher', 'class_quantity')
+    list_display = ('name', 'teacher', 'class_quantity', 'status')
     list_filter = ('teacher',)
 
 

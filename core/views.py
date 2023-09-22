@@ -157,8 +157,8 @@ class CoursesView(TemplateView):
     def get_context_data(self, **kwargs):  # Jalar data de accounts
         context = super().get_context_data(**kwargs)
         courses = Course.objects.all()
+        # color = None
         student = self.request.user if self.request.user.is_authenticated else None
-
         for item in courses:
             if student:
                 registration = Registration.objects.filter(
@@ -169,6 +169,11 @@ class CoursesView(TemplateView):
             enrollment_count = Registration.objects.filter(
                 course=item).count()
             item.enrollment_count = enrollment_count
-
+        # if courses.status == 'I':
+        #     color = 'bg-success'
+        # elif courses.status == 'P':
+        #     color = 'bg-warning'
+        # elif courses.status == 'F':
+        #     color = 'bg-danger'
         context['courses'] = courses
         return context  # con esto ya tenemos todos los cursos de la base de datos

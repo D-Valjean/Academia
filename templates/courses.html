@@ -10,25 +10,37 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-4">
                 {% for course in courses %}
                     <div class="col">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">{{course.name}}</h5>
-                                <p class="card-text">{{course.description}}</p>
-                                <p class="card-text"><strong>Profesor: </strong>{{course.teacher.first_name}} {{course.teacher.last_name}}</p>
-                                <p class="card-text"><strong>Cantidad de Clases: </strong>{{course.class_quantity}}</p>
-                                <p class="card-text"><strong>Cantidad de Inscriptos: </strong>{{course.enrollment_count}}</p>
-                                {% if group_name == 'estudiantes' and not course.is_enrolled %}
-                                    <a class="btn btn-sm btn-success" href="">Anotarse</a>
-                                {% elif course.is_enrolled %}
-                                    <h5><span class="badge bg-info">Ya estás inscrito</span></h5>
-                                    <a class="btn btn-sm btn-warning" href="{% url 'profile' %}">Ir a Perfil</a>
-                                {% endif %}
-                                {% if group_name == 'administrativos' %}
-                                    <a class="btn btn-sm btn-warning" href="">Editar</a>
-                                    <a class="btn btn-sm btn-danger" href="">Eleminar</a>
-                                {% endif %}
+                        {% if course.status == 'I' %}
+                            <div class="card border-5 border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-success">Inscriciones Abiertas</span></h5>
+                        {% elif course.status == 'P' %}
+                            <div class="card border-5 border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-primary">Curso En Progreso</span></h5>
+                        {% else %}
+                            <div class="card border-5 border-danger">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-danger">Curso Finalizado</span></h5>
+                        {% endif %}
+                                {% comment %} <div class="card-body">
+                                    <h5 class="card-title">{{course.name}} <span class="badge bg-">{{course.status}}</span></h5> {% endcomment %}
+                                    <p class="card-text">{{course.description}}</p>
+                                    <p class="card-text"><strong>Profesor: </strong>{{course.teacher.first_name}} {{course.teacher.last_name}}</p>
+                                    <p class="card-text"><strong>Cantidad de Clases: </strong>{{course.class_quantity}}</p>
+                                    <p class="card-text"><strong>Cantidad de Inscriptos: </strong>{{course.enrollment_count}}</p>
+                                    {% if group_name == 'estudiantes' and not course.is_enrolled %}
+                                        <a class="btn btn-sm btn-success" href="">Anotarse</a>
+                                    {% elif course.is_enrolled %}
+                                        <h5><span class="badge bg-info">Ya estás inscrito</span></h5>
+                                        <a class="btn btn-sm btn-warning" href="{% url 'profile' %}">Ir a Perfil</a>
+                                    {% endif %}
+                                    {% if group_name == 'administrativos' %}
+                                        <a class="btn btn-sm btn-warning" href="">Editar</a>
+                                        <a class="btn btn-sm btn-danger" href="">Eleminar</a>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
                     </div>
                 {% endfor %}
             </div>

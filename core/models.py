@@ -7,6 +7,11 @@ from django.dispatch import receiver
 
 # CURSOS
 class Course(models.Model):
+    STATUS_CHOICES = (
+        ('I', 'En etapa de inscripción'),
+        ('P', 'En progreso'),
+        ('F', 'Finalizado'),
+    )
     name = models.CharField(max_length=90, verbose_name='Nombre')
     description = models.TextField(
         verbose_name='Descripción', blank=True, null=True)
@@ -14,6 +19,8 @@ class Course(models.Model):
         User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesores'}, verbose_name='profesor')
     class_quantity = models.PositiveIntegerField(
         default=0, verbose_name='Cantidad de clases')
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, default='I', verbose_name='Estado')
 
     def __str__(self):
         return self.name
