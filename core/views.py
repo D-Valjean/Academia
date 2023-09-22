@@ -7,6 +7,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from .forms import RegisterForm, ProfileForm, UserForm
 from django.utils.decorators import method_decorator
+from .models import Course, Registration, Attendance, Mark
 # Create your views here.
 
 
@@ -15,7 +16,7 @@ def plural_to_singular(plural):
     plural_singular = {
         "estudiantes": "estudiante",
         "profesores": "profesor",
-        "preceptores": "preceptor",
+        "director": "director",
         "administrativos": "administrativo",
     }
 
@@ -122,7 +123,7 @@ class RegisterView(View):
 class ProfileView(TemplateView):
     template_name = 'Profile/profile.html'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # Jalar data de accounts
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context['user_form'] = UserForm(instance=user)
@@ -146,3 +147,28 @@ class ProfileView(TemplateView):
         contex['user_form'] = user_form
         contex['profile_form'] = profile_form
         return render(request, 'Profile/profile.html', contex)
+
+
+# Mostrar Cursos
+@add_group_name_to_context
+class CoursesView(TemplateView):
+    template_name = 'courses.html'
+
+    def get_context_data(self, **kwargs):  # Jalar data de accounts
+        context = super().get_context_data(**kwargs)
+        courses = Course.objects.all()
+        student = self.request.user if self.request.user.is_authenticated else None
+
+        for item in courses:
+            if student:
+                registration = Registration.objects.filter(
+                    course=item, student=student).first()
+                item.is_enrolled = registration is not None
+            else:
+                item.is_enrolled = False
+            enrollment_count = Registration.objects.filter(
+                course=item).count()
+            item.enrollment_count = enrollment_count
+
+        context['courses'] = courses
+        return context  # con esto ya tenemos todos los cursos de la base de datos
