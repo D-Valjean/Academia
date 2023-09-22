@@ -3,23 +3,30 @@
     <div class ="container my-4">
         <h2>Nuestros Cursos</h2>
         {% if group_name == 'administrativos' %}
-            <a class="btn btn-secondary" href="#">Agregar Curso</a>
+            <a class="btn btn-secondary" href="{% url 'courses_create' %}">Agregar Curso</a>
         {% endif %}
-            {% comment %} Seccion de Mensajes {% endcomment %}
-
+            {% comment %} Seccion de Mensajes, pregunta si hay mesajes en vista {% endcomment %}
+            {% if messages %}
+                <div class ='container mt-3'>
+                    {% for message in messages %}
+                        <div class="alert-success" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+            {% endif %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-4">
                 {% for course in courses %}
                     <div class="col">
                         {% if course.status == 'I' %}
-                            <div class="card border-5 border-success">
+                            <div class="card border-2 border-success">
                                 <div class="card-body">
                                     <h5 class="card-title">{{course.name}} | <span class="badge bg-success">Inscriciones Abiertas</span></h5>
                         {% elif course.status == 'P' %}
-                            <div class="card border-5 border-primary">
+                            <div class="card border-2 border-primary">
                                 <div class="card-body">
                                     <h5 class="card-title">{{course.name}} | <span class="badge bg-primary">Curso En Progreso</span></h5>
                         {% else %}
-                            <div class="card border-5 border-danger">
+                            <div class="card border-2 border-danger">
                                 <div class="card-body">
                                     <h5 class="card-title">{{course.name}} | <span class="badge bg-danger">Curso Finalizado</span></h5>
                         {% endif %}
@@ -29,11 +36,11 @@
                                     <p class="card-text"><strong>Profesor: </strong>{{course.teacher.first_name}} {{course.teacher.last_name}}</p>
                                     <p class="card-text"><strong>Cantidad de Clases: </strong>{{course.class_quantity}}</p>
                                     <p class="card-text"><strong>Cantidad de Inscriptos: </strong>{{course.enrollment_count}}</p>
-                                    {% if group_name == 'estudiantes' and not course.is_enrolled %}
-                                        <a class="btn btn-sm btn-success" href="">Anotarse</a>
+                                    {% if group_name == 'estudiantes' and not course.is_enrolled and course.status == 'I' %}
+                                            <a class="btn btn-sm btn-primary" href="">Anotarse</a>
                                     {% elif course.is_enrolled %}
-                                        <h5><span class="badge bg-info">Ya estás inscrito</span></h5>
-                                        <a class="btn btn-sm btn-warning" href="{% url 'profile' %}">Ir a Perfil</a>
+                                        <h5><span class="badge bg-info"><strong> Ya estás inscrito</strong></span></h5>
+                                        <a class="btn btn-sm btn-warning" href="{% url 'profile' %}"><strong>Ir a Perfil</strong></a>
                                     {% endif %}
                                     {% if group_name == 'administrativos' %}
                                         <a class="btn btn-sm btn-warning" href="">Editar</a>

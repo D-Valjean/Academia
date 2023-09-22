@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from accounts.models import Profile
+from .models import Course
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Field
 
 
 class LoginForm(AuthenticationForm):
@@ -39,3 +42,31 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile  # <-- Importar de accounts para que el usuario pueda modificar sus datos
         fields = ['image', 'address', 'location', 'telephone']
+
+
+class CourseForm(forms.ModelForm):
+    # los campos teacher y status son campos especiales que tenemos que definir antes para que podemas seleccionar al momento de crear un curso nuevo
+    teacher = forms.ModelChoiceField(
+        queryset=User.objects.filter(groups__name='profesores'), label='Profesor'
+    )
+    status = forms.ChoiceField(
+        choices=Course.STATUS_CHOICES, initial='I', label='Estado'
+    )
+    # ajustar el tama;o del campo de descripcion
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3}), label='Descripción'
+    )
+
+    class Meta:
+        model = Course
+        fields = ['name', 'description', 'teacher', 'class_quantity', 'status']
+
+    helper = FormHelper()
+    helper.layout = Layout(
+        Field('name'),
+        Field('description'),
+        Field('teacher'),
+        Field('class_quantity'),
+        Field('status'),
+        Submit('submit', 'submit'),
+    )

@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.models import Group
-from .forms import RegisterForm
+from .forms import RegisterForm, UserForm, ProfileForm, CourseForm
 from django.views import View
 from django.utils.decorators import method_decorator
 from .forms import RegisterForm, ProfileForm, UserForm
 from django.utils.decorators import method_decorator
 from .models import Course, Registration, Attendance, Mark
+from django.urls import reverse_lazy
+from django.contrib import messages
 # Create your views here.
 
 
@@ -177,3 +179,21 @@ class CoursesView(TemplateView):
         #     color = 'bg-danger'
         context['courses'] = courses
         return context  # con esto ya tenemos todos los cursos de la base de datos
+
+
+# Crear Cursos
+@add_group_name_to_context
+class CourseCreateView(CreateView):
+    model = Course  # Definir el modelo el cual va trabajar
+    form_class = CourseForm
+    template_name = 'create_course.html'
+    # Redireccionar a la pagina de cursos
+    success_url = reverse_lazy('courses')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Curso creado con exito')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al crear el curso')
+        return self.render_to_response(self.get_context_data(form=form))

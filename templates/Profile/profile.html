@@ -16,12 +16,12 @@
                         <p><strong>Correo electrónico:  </strong>{{ user.email }}</p>
                         <hr>
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <button type="button" class="btn btn-light w-100 mb-1" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                         Editar Perfil
                         </button>
 
                         {% if request.user.username == 'admin'  %}
-                            <a class="btn btn-warning w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
+                            <a class="btn btn-info w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
                         {% endif %}
                         <a class="btn btn-danger w-100" href="{% url 'logout' %}">Cerrar sesión</a>
                     </div>
