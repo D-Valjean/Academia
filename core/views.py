@@ -1,7 +1,10 @@
+from django.db.models.query import QuerySet
+from typing import Any
+from django.db import models
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, CourseForm
 from django.views import View
@@ -14,6 +17,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
 import os
+
 # Create your views here.
 
 
@@ -219,3 +223,47 @@ class CourseCreateView(UserPassesTestMixin, CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear el curso')
         return self.render_to_response(self.get_context_data(form=form))
+
+
+# Edicion de un curso
+@add_group_name_to_context
+class CourseeditView(UserPassesTestMixin, UpdateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'edit_course.html'
+    # Redireccionar a la pagina de cursos
+    success_url = reverse_lazy('courses')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administrativos').exists()
+
+    def handle_no_permission(self) -> HttpResponseRedirect:
+        return redirect('error')
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, 'Curso editado con exito')
+        return redirect(self.success_url)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al editar el curso')
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+# ELIMINACION DE UN REGISTRO
+@add_group_name_to_context
+class CourseDeleteView(UserPassesTestMixin, DeleteView):
+    model = Course
+    template_name = 'delete_course.html'
+    success_url = reverse_lazy('courses')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administrativos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(
+            self.request, 'El registro se ha eliminado correctamente')
+        return super().form_valid(form)

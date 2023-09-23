@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
     <div class ="container my-4">
-        <h2>Nuestros Cursos</h2>
-        {% if group_name == 'administrativos' %}
-            <a class="btn btn-secondary" href="{% url 'courses_create' %}">Agregar Curso</a>
-        {% endif %}
+        <div class = "row">
+            <div class = "col">
+                <h2>Nuestros Cursos</h2>
+            </div>
+            <div class = "col">
+                <span class='float-end'>
+                {% if group_name == 'administrativos' %}
+                    <a class="btn btn-info" href="{% url 'courses_create' %}">Agregar Curso</a>
+                {% endif %}
+                </span>
+            </div>
+        </div>
+        <hr>
             {% comment %} Seccion de Mensajes, pregunta si hay mesajes en vista {% endcomment %}
             {% if messages %}
                 <div class ='container mt-3'>
@@ -43,8 +52,8 @@
                                         <a class="btn btn-sm btn-warning" href="{% url 'profile' %}"><strong>Ir a Perfil</strong></a>
                                     {% endif %}
                                     {% if group_name == 'administrativos' %}
-                                        <a class="btn btn-sm btn-warning" href="">Editar</a>
-                                        <a class="btn btn-sm btn-danger" href="">Eleminar</a>
+                                        <a class="btn btn-sm btn-warning" href="{% url 'course_edit' course.id %}">Editar</a>
+                                        <a class="btn btn-sm btn-danger" href="{% url 'course_delete' course.id %}">Eleminar</a>
                                     {% endif %}
                                 </div>
                             </div>
