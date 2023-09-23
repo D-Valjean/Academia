@@ -2,7 +2,7 @@ from django.db.models.query import QuerySet
 from typing import Any
 from django.db import models
 from django.http.response import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import Group
@@ -267,3 +267,22 @@ class CourseDeleteView(UserPassesTestMixin, DeleteView):
         messages.success(
             self.request, 'El registro se ha eliminado correctamente')
         return super().form_valid(form)
+
+
+# Registro de estudiante a curso
+@add_group_name_to_context
+class CourseEnrollmentView(TemplateView):
+    def get(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+        if request.user.is_authenticated and request.user.groups.first().name == 'estudiantes':
+            student = request.user
+
+            registration = Registration(student=student, course=course)
+            registration.save()
+
+            messages.success(
+                request, 'Se ha registrado el estudiante al curso')
+        else:
+            messages.error(
+                request, 'No tienes permisos para realizar esta accion')
+        return redirect('courses')

@@ -46,7 +46,7 @@
                                     <p class="card-text"><strong>Cantidad de Clases: </strong>{{course.class_quantity}}</p>
                                     <p class="card-text"><strong>Cantidad de Inscriptos: </strong>{{course.enrollment_count}}</p>
                                     {% if group_name == 'estudiantes' and not course.is_enrolled and course.status == 'I' %}
-                                            <a class="btn btn-sm btn-primary" href="">Anotarse</a>
+                                            <a class="btn btn-sm btn-primary" href="{% url 'enroll_course' course.id %}">Anotarse</a>
                                     {% elif course.is_enrolled %}
                                         <h5><span class="badge bg-info"><strong> Ya estás inscrito</strong></span></h5>
                                         <a class="btn btn-sm btn-warning" href="{% url 'profile' %}"><strong>Ir a Perfil</strong></a>
