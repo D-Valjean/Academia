@@ -1,3 +1,4 @@
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.views.generic import TemplateView, CreateView
@@ -10,6 +11,9 @@ from django.utils.decorators import method_decorator
 from .models import Course, Registration, Attendance, Mark
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.conf import settings
+import os
 # Create your views here.
 
 
@@ -158,7 +162,7 @@ class CoursesView(TemplateView):
 
     def get_context_data(self, **kwargs):  # Jalar data de accounts
         context = super().get_context_data(**kwargs)
-        courses = Course.objects.all()
+        courses = Course.objects.all().order_by('-id')
         # color = None
         student = self.request.user if self.request.user.is_authenticated else None
         for item in courses:
@@ -181,14 +185,32 @@ class CoursesView(TemplateView):
         return context  # con esto ya tenemos todos los cursos de la base de datos
 
 
+@add_group_name_to_context
+class ErrorView(TemplateView):
+    template_name = 'error.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        error_image_path = os.path.join(settings.MEDIA_URL, 'error.webp')
+        context['error_image_path'] = error_image_path
+        return context
+
+
 # Crear Cursos
 @add_group_name_to_context
-class CourseCreateView(CreateView):
+class CourseCreateView(UserPassesTestMixin, CreateView):
     model = Course  # Definir el modelo el cual va trabajar
     form_class = CourseForm
     template_name = 'create_course.html'
     # Redireccionar a la pagina de cursos
     success_url = reverse_lazy('courses')
+
+    # Verificar si el usuario es administrativo y ningun otro tipo de usuario pueda acceder
+    def test_func(self):
+        return self.request.user.groups.filter(name='administrativos').exists()
+
+    def handle_no_permission(self) -> HttpResponseRedirect:
+        return redirect('error')
 
     def form_valid(self, form):
         messages.success(self.request, 'Curso creado con exito')

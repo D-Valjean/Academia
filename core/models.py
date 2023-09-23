@@ -28,9 +28,10 @@ class Course(models.Model):
     class meta:
         verbose_name = 'Curso'
         verbose_name_plural = 'Cursos'
-
+        ordering = ['-id']
 
 # INCRIPSCIONES
+
 
 class Registration(models.Model):
     course = models.ForeignKey(
