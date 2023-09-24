@@ -5,7 +5,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from .forms import RegisterForm, UserForm, ProfileForm, CourseForm
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -138,6 +138,12 @@ class ProfileView(TemplateView):
         user = self.request.user
         context['user_form'] = UserForm(instance=user)
         context['profile_form'] = ProfileForm(instance=user.profile)
+
+        if user.groups.first().name == 'profesores':
+            # Obtener todos los cursos asignados al profesor
+            assigned_courses = Course.objects.filter(
+                teacher=user).order_by('-id')
+            context['assigned_courses'] = assigned_courses
 
         return context
 
@@ -286,3 +292,30 @@ class CourseEnrollmentView(TemplateView):
             messages.error(
                 request, 'No tienes permisos para realizar esta accion')
         return redirect('courses')
+
+
+# Mostrar listas de alummnos y notas para profesores
+@add_group_name_to_context
+class StudentlistMarkView(TemplateView):
+    template_name = 'student_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course_id = self.kwargs['course_id']
+        course = get_object_or_404(Course, id=course_id)
+        marks = Mark.objects.filter(course=course)
+
+        student_data = []
+        for mark in marks:
+            student = get_object_or_404(User, id=mark.student.id)
+            student_data.append({
+                'mark_id': mark.id,
+                'name': student.get_full_name(),
+                'mark1': mark.mark_1,
+                'mark2': mark.mark_2,
+                'mark3': mark.mark_3,
+                'average': mark.average,
+            })
+        context['course'] = course
+        context['student_data'] = student_data
+        return context

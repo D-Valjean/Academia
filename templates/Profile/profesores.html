@@ -1,3 +1,21 @@
 <div>
-    <h6>{{ group_name_singular | capfirst}}</h6>
+    <h5>Cursos Asignados </h5>
+    {% if assigned_courses %}
+        <ul class="list-group">
+        {% for course in assigned_courses %}
+            {% with enrollment_count=course.registration_set.count %}
+            <li class="list-group-item">
+                {{ course.name }}
+                <a href="{% url 'studentlist' course.id %}" class="btn btn-sm btn-warning float-end">Ingresar Notas
+                    <span class="badge bg-light text-dark rounded-pill">{{ enrollment_count }}</span>
+                </a>
+            </li>
+            {% endwith %}
+        {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-primary" role="alert">
+            No tiene Cursos Asignados
+        </div>
+    {% endif %}
 </div>
