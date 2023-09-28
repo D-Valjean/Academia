@@ -109,7 +109,7 @@ class Mark(models.Model):
         valid_marks = [mark for mark in marks if mark is not None]
         if valid_marks:
             return sum(valid_marks) / len(valid_marks)
-        return 0
+        return None
 
     def save(self, *args, **kwargs):
         if self.mark_1 or self.mark_2 or self.mark_3:

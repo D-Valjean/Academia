@@ -7,8 +7,9 @@ from .models import Registration, Mark
 def create_mark(sender, instance, created, **kwargs):
     if created:
         Mark.objects.create(student=instance.student,
-        course=instance.course,
-        mark_1=0,
-        mark_2=0,
-        mark_3=0
-        )
+                            course=instance.course,
+                            mark_1=None,
+                            mark_2=None,
+                            mark_3=None,
+                            average=None
+                            )
