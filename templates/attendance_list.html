@@ -37,7 +37,7 @@
 				<tbody>
 				{% for student in students %}
 					<tr>
-						{% if not student.enabled %}
+						{% if not student.enable %}
 							<td class="text-danger">{{ student.student__first_name }} {{ student.student__last_name }}
 								<span class="badge text-bg-danger">IRREGULAR</span></td>
 						{% else %}

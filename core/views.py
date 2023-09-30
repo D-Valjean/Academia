@@ -389,33 +389,41 @@ class AttendanceListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         course = Course.objects.get(id=self.kwargs['course_id'])
-        students = Registration.objects.filter(
-            course=course).values('student__id', 'student__first_name', 'student__last_name', 'enable')
-        all_dates = Attendance.objects.filter(course=course, date__isnull=False).values_list(
-            'date', flat=True).distinct()
-        print(all_dates)
+        students = Registration.objects.filter(course=course).values(
+            'student__id', 'student__first_name', 'student__last_name', 'enable')
+
+        all_dates = Attendance.objects.filter(
+            course=course, date__isnull=False).values_list('date', flat=True).distinct()
+        # [('2023-08-22'), ('2023-08-29')]
+        # ('2023-08-22', '2023-08-29') => flat=True
         remaining_classes = course.class_quantity - all_dates.count()
+
         attendance_data = []
 
         for date in all_dates:
             attendance_dict = {
                 'date': date,
-                'attendance-data': []
+                'attendance_data': []
             }
+
             for student in students:
                 try:
                     attendance = Attendance.objects.get(
-                        course=course, date=date, student_id=student['student__id'])
+                        course=course, student_id=student['student__id'], date=date)
                     attendance_status = attendance.present
-                except:
+                except Attendance.DoesNotExist:
                     attendance_status = False
+
                 student_data = {
                     'student': student,
                     'attendance_status': attendance_status,
                     'enable': student['enable']
                 }
-                attendance_dict['attendance-data'].append(student_data)
+
+                attendance_dict['attendance_data'].append(student_data)
+
             attendance_data.append(attendance_dict)
+
         context['course'] = course
         context['students'] = students
         context['attendance_data'] = attendance_data
@@ -431,23 +439,24 @@ class AddAttendanceView(TemplateView):
         context = super().get_context_data(**kwargs)
         course_id = kwargs['course_id']
         course = Course.objects.get(id=course_id)
-        registrations = Registration.objects.filter(
-            course=course)
+        registrations = Registration.objects.filter(course=course)
         context['course'] = course
         context['registrations'] = registrations
         return context
 
     def post(self, request, course_id):
         course = Course.objects.get(id=course_id)
-        registrations = Registration.objects.filter(
-            course=course)
+        registrations = Registration.objects.filter(course=course)
+
         if request.method == 'POST':
             date = request.POST.get('date')
+
             for registration in registrations:
                 present = request.POST.get(
-                    'attendance_' + str(registration.id))
+                    'attendance_' + str(registration.student.id))
                 attendance = Attendance.objects.filter(
                     student=registration.student, course=course, date=None).first()
+
                 if attendance:
                     attendance.date = date
                     attendance.present = bool(present)
