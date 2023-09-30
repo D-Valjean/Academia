@@ -4,12 +4,13 @@ from .models import Registration, Mark
 
 
 @receiver(post_save, sender=Registration)
-def create_mark(sender, instance, created, **kwargs):
+def create_marks(sender, instance, created, **kwargs):
     if created:
-        Mark.objects.create(student=instance.student,
-                            course=instance.course,
-                            mark_1=None,
-                            mark_2=None,
-                            mark_3=None,
-                            average=None
-                            )
+        Mark.objects.create(
+            course=instance.course,
+            student=instance.student,
+            mark_1=None,
+            mark_2=None,
+            mark_3=None,
+            average=None
+        )

@@ -101,9 +101,10 @@ class Mark(models.Model):
     average = models.DecimalField(
         max_digits=3, decimal_places=1, null=True, blank=True, verbose_name='Promedio')
 
-    def __str__(self) -> str:
+    def __str__(self):
         return str(self.course)
 
+    # Calcular el promedio (llamo a una función)
     def calculate_average(self):
         marks = [self.mark_1, self.mark_2, self.mark_3]
         valid_marks = [mark for mark in marks if mark is not None]
@@ -112,8 +113,10 @@ class Mark(models.Model):
         return None
 
     def save(self, *args, **kwargs):
+        # Verifico si alguna nota cambio
         if self.mark_1 or self.mark_2 or self.mark_3:
-            self.average = self.calculate_average()  # calcular Promedio
+            # Calcular el promedio (llamo a una función)
+            self.average = self.calculate_average()
         super().save(*args, **kwargs)
 
     class Meta:

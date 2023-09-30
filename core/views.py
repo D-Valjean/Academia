@@ -144,8 +144,15 @@ class ProfileView(TemplateView):
             assigned_courses = Course.objects.filter(
                 teacher=user).order_by('-id')
             context['assigned_courses'] = assigned_courses
-
-        return context
+            return context
+        elif user.groups.first().name == 'estudiantes':
+            # Obtener todos los cursos asignados al estudiante
+            registration = Registration.objects.filter(
+                student=user)
+            enrolled_courses = [
+                registration.course for registration in registration]
+            context['enrolled_courses'] = enrolled_courses
+            return context
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
@@ -311,9 +318,9 @@ class StudentlistMarkView(TemplateView):
             student_data.append({
                 'mark_id': mark.id,
                 'name': student.get_full_name(),
-                'mark1': mark.mark_1,
-                'mark2': mark.mark_2,
-                'mark3': mark.mark_3,
+                'mark_1': mark.mark_1,
+                'mark_2': mark.mark_2,
+                'mark_3': mark.mark_3,
                 'average': mark.average,
             })
         context['course'] = course
@@ -323,7 +330,7 @@ class StudentlistMarkView(TemplateView):
 
 # Actualizar Notas de Alumnos
 @add_group_name_to_context
-class UpdateMarkView(TemplateView):
+class UpdateMarkView(UpdateView):
     model = Mark
     fields = ['mark_1', 'mark_2', 'mark_3']
     template_name = 'update_mark.html'

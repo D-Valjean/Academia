@@ -21,5 +21,5 @@ urlpatterns = [
          CourseEnrollmentView.as_view(), name='enroll_course'),
     path('error/', login_required(ErrorView.as_view()), name='error'),
     path('courses/update_mark/<int:mark_id>',
-         UpdateMarkView.as_view(), name='update_mark'),
+         login_required(UpdateMarkView.as_view()), name='update_mark'),
 ]
