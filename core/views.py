@@ -16,6 +16,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
+from datetime import datetime
 import os
 
 # Create your views here.
@@ -143,8 +144,17 @@ class ProfileView(TemplateView):
             # Obtener todos los cursos asignados al profesor
             assigned_courses = Course.objects.filter(
                 teacher=user).order_by('-id')
+            inscription_courses = assigned_courses.filter(
+                status='I')
+            progress_courses = assigned_courses.filter(
+                status='P')
+            finalized_courses = assigned_courses.filter(
+                status='F')
             context['assigned_courses'] = assigned_courses
-            return context
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+
         elif user.groups.first().name == 'estudiantes':
             # Obtener todos los cursos asignados al estudiante
             registration = Registration.objects.filter(
@@ -152,7 +162,21 @@ class ProfileView(TemplateView):
             enrolled_courses = [
                 registration.course for registration in registration]
             context['enrolled_courses'] = enrolled_courses
-            return context
+        elif user.groups.first().name == 'director':
+            # Obtener todos los cursos asignados al director
+            all_courses = Course.objects.all()
+            inscription_courses = all_courses.filter(
+                status='I')
+            progress_courses = all_courses.filter(
+                status='P')
+            finalized_courses = all_courses.filter(
+                status='F')
+            context['all_courses'] = all_courses
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+            # Obtener todos los cursos asignados al administrativo
+        return context
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
@@ -336,7 +360,7 @@ class UpdateMarkView(UpdateView):
     template_name = 'update_mark.html'
 
     def get_success_url(self):
-        return reverse_lazy('student_list_mark', kwargs={'course_id': self.object.course.id})
+        return reverse_lazy('studentlist', kwargs={'course_id': self.object.course.id})
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -351,3 +375,83 @@ class UpdateMarkView(UpdateView):
     def get_object(self, queryset=None):
         mark_id = self.kwargs['mark_id']
         return get_object_or_404(Mark, id=mark_id)
+
+
+@add_group_name_to_context
+class AttendanceListView(ListView):
+    model = Attendance
+    template_name = 'attendance_list.html'
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Attendance.objects.filter(course_id=course_id, date__isnull=False).order_by('date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course = Course.objects.get(id=self.kwargs['course_id'])
+        students = Registration.objects.filter(
+            course=course).values('student__id', 'student__first_name', 'student__last_name', 'enable')
+        all_dates = Attendance.objects.filter(course=course, date__isnull=False).values_list(
+            'date', flat=True).distinct()
+        print(all_dates)
+        remaining_classes = course.class_quantity - all_dates.count()
+        attendance_data = []
+
+        for date in all_dates:
+            attendance_dict = {
+                'date': date,
+                'attendance-data': []
+            }
+            for student in students:
+                try:
+                    attendance = Attendance.objects.get(
+                        course=course, date=date, student_id=student['student__id'])
+                    attendance_status = attendance.present
+                except:
+                    attendance_status = False
+                student_data = {
+                    'student': student,
+                    'attendance_status': attendance_status,
+                    'enable': student['enable']
+                }
+                attendance_dict['attendance-data'].append(student_data)
+            attendance_data.append(attendance_dict)
+        context['course'] = course
+        context['students'] = students
+        context['attendance_data'] = attendance_data
+        context['remaining_classes'] = remaining_classes
+        return context
+
+
+@add_group_name_to_context
+class AddAttendanceView(TemplateView):
+    template_name = 'add_attendance.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course_id = kwargs['course_id']
+        course = Course.objects.get(id=course_id)
+        registrations = Registration.objects.filter(
+            course=course)
+        context['course'] = course
+        context['registrations'] = registrations
+        return context
+
+    def post(self, request, course_id):
+        course = Course.objects.get(id=course_id)
+        registrations = Registration.objects.filter(
+            course=course)
+        if request.method == 'POST':
+            date = request.POST.get('date')
+            for registration in registrations:
+                present = request.POST.get(
+                    'attendance_' + str(registration.id))
+                attendance = Attendance.objects.filter(
+                    student=registration.student, course=course, date=None).first()
+                if attendance:
+                    attendance.date = date
+                    attendance.present = bool(present)
+                    attendance.save()
+                    attendance.update_registration_enable_status()
+
+        return redirect('list_attendance', course_id=course_id)

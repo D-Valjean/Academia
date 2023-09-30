@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView
+from .views import HomeView, PricingView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView, AttendanceListView, AddAttendanceView
 # esto es para proteger las rutas de la web para que usuarios no autorizados no puedan acceder
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -22,4 +22,8 @@ urlpatterns = [
     path('error/', login_required(ErrorView.as_view()), name='error'),
     path('courses/update_mark/<int:mark_id>',
          login_required(UpdateMarkView.as_view()), name='update_mark'),
+    path('courses/<int:course_id>/attendance/',
+         login_required(AttendanceListView.as_view()), name='list_attendance'),
+    path('courses/<int:course_id>/attendance/add/',
+         login_required(AddAttendanceView.as_view()), name='add_attendance'),
 ]
