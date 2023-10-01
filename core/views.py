@@ -22,6 +22,7 @@ import os
 # Create your views here.
 
 
+# Pasar al momento de ver en la aplicacion los grupos que se crearon en Django a singular
 def plural_to_singular(plural):
     # Diccionario de palabras
     plural_singular = {
@@ -34,6 +35,7 @@ def plural_to_singular(plural):
     return plural_singular.get(plural, "error")
 
 
+# Esta funcion nos permite agregar el nombre del grupo al contexto,de esta forma no tenemos que validar el usuario en cada funcion, lo englobamos en uno sola
 def add_group_name_to_context(view_class):
     original_dispatch = view_class.dispatch
 
@@ -95,6 +97,7 @@ def add_group_name_to_context(view_class):
 
 #         return context
 
+
 @add_group_name_to_context
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -106,7 +109,6 @@ class PricingView(TemplateView):
 
 
 # REGISTRO DE USUARIO
-
 class RegisterView(View):
     def get(self, request):
         data = {

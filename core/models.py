@@ -30,14 +30,14 @@ class Course(models.Model):
         verbose_name_plural = 'Cursos'
         ordering = ['-id']
 
+
 # INCRIPSCIONES
-
-
 class Registration(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
     student = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='student_registration', limit_choices_to={'groups__name': 'estudiantes'}, verbose_name='estudiante')
+    # En la logica , enable lo tomamos como que el alumnos asiste a todas las clases, cuando el estudiante no asiste a todas las clases, lo tomamos como irregular
     enable = models.BooleanField(default=True, verbose_name='Alumno Regular')
 
     def __str__(self):
@@ -47,9 +47,8 @@ class Registration(models.Model):
         verbose_name = 'Inscripción'
         verbose_name_plural = 'Inscripciones'
 
+
 # ASISTENCIAS
-
-
 class Attendance(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
@@ -84,9 +83,8 @@ class Attendance(models.Model):
     def __str__(self):
         return f'Asistencia {self.id}'
 
+
 # NOTAS
-
-
 class Mark(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
@@ -122,6 +120,8 @@ class Mark(models.Model):
     class Meta:
         verbose_name = 'Nota'
         verbose_name_plural = 'Notas'
+
+# Guardar notas en la base de datos
 
 
 @receiver(post_save, sender=Attendance)
