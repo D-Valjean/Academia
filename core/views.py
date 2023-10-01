@@ -17,6 +17,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
 from datetime import datetime
+from django.http import JsonResponse
 import os
 
 # Create your views here.
@@ -152,7 +153,6 @@ class ProfileView(TemplateView):
                 status='P')
             finalized_courses = assigned_courses.filter(
                 status='F')
-            context['assigned_courses'] = assigned_courses
             context['inscription_courses'] = inscription_courses
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
@@ -161,9 +161,24 @@ class ProfileView(TemplateView):
             # Obtener todos los cursos asignados al estudiante
             registration = Registration.objects.filter(
                 student=user)
-            enrolled_courses = [
-                registration.course for registration in registration]
-            context['enrolled_courses'] = enrolled_courses
+            enrolled_courses = []
+            inscription_course = []
+            progress_course = []
+            finalized_courses = []
+            for registration in registration:
+                course = registration.course
+                enrolled_courses.append(course)
+
+                if course.status == 'I':
+                    inscription_course.append(course)
+                elif course.status == 'P':
+                    progress_course.append(course)
+                elif course.status == 'F':
+                    finalized_courses.append(course)
+            context['inscription_course'] = inscription_course
+            context['progress_course'] = progress_course
+            context['finalized_courses'] = finalized_courses
+
         elif user.groups.first().name == 'director':
             # Obtener todos los cursos asignados al director
             all_courses = Course.objects.all()
@@ -173,11 +188,40 @@ class ProfileView(TemplateView):
                 status='P')
             finalized_courses = all_courses.filter(
                 status='F')
-            context['all_courses'] = all_courses
             context['inscription_courses'] = inscription_courses
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
             # Obtener todos los cursos asignados al administrativo
+        elif user.groups.first().name == 'administrativos':
+            # Obtener todos los Usuarios
+            all_user = User.objects.all()
+            all_groups = Group.objects.all()
+            user_profiles = []
+            for user in all_user:
+                profile = user.profile
+                user_groups = user.groups.all()
+                procesed_groups = [plural_to_singular(
+                    group.name) for group in user_groups]  # Pasar a Singular
+                user_profiles.append({
+                    'user': user,
+                    'groups': procesed_groups,
+                    'profile': profile
+                })
+            context['user_profiles'] = user_profiles
+            context['all_groups'] = all_groups
+
+            # Obtener todos los cursos
+            all_courses = Course.objects.all()
+            inscription_courses = all_courses.filter(
+                status='I')
+            progress_courses = all_courses.filter(
+                status='P')
+            finalized_courses = all_courses.filter(
+                status='F')
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -438,9 +482,12 @@ class AddAttendanceView(TemplateView):
     template_name = 'add_attendance.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)  # Jalo los fatos a una variable
+        # Se crea una variable con espacio para almacenar los datos
         course_id = kwargs['course_id']
+        # Consulto en la traba couse todos los id, y los relaciono con course_id, que luego lo almaceno en la variable course
         course = Course.objects.get(id=course_id)
+        # Consulto en registros todos los cursos en la base de tatos y lo relaciono con la variable course que arriba
         registrations = Registration.objects.filter(course=course)
         context['course'] = course
         context['registrations'] = registrations
@@ -466,3 +513,95 @@ class AddAttendanceView(TemplateView):
                     attendance.update_registration_enable_status()
 
         return redirect('list_attendance', course_id=course_id)
+
+
+# CONSULTAR EVOLUCION DEL ESTUDIANTE
+def evolution(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    teacher = course.teacher.get_full_name()
+    class_quantity = course.class_quantity
+    student = request.user
+
+    # Obtengo el estado regular o irregular del estudiante
+    registration = Registration.objects.filter(
+        course=course, student=student).values('enabled').first()
+
+    # Obtengo las asistencias
+    attendances = Attendance.objects.filter(course=course, student=student)
+
+    # Obtengo las notas
+    marks = Mark.objects.filter(course=course, student=student)
+
+    # Preparo la informacion para enviar al template
+    attendances_data = [
+        {
+            'date': attendance.date.strftime('%d-%m-%Y'),
+            'present': attendance.present
+        }
+        for attendance in attendances if attendance.date is not None
+    ]
+
+    marks_data = [
+        {
+            'mark_1': mark.mark_1,
+            'mark_2': mark.mark_2,
+            'mark_3': mark.mark_3,
+            'average': mark.average
+        }
+        for mark in marks
+    ]
+
+    evolution_data = {
+        'registration': registration,
+        'teacher': teacher,
+        'class_quantity': class_quantity,
+        'courseName': course.name,
+        'attendances': attendances_data,
+        'marks': marks_data
+    }
+    return JsonResponse(evolution_data, safe=False)
+
+
+def evolution(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    teacher = course.teacher.get_full_name()
+    class_quantity = course.class_quantity
+    student = request.user
+    registration_status = Registration.objects.filter(
+        course=course, student=student).values('enabled').first()
+    attendances = Attendance.objects.filter(course=course, student=student)
+    marks = Mark.objects.filter(course=course, student=student)
+
+    attendances_data = []
+    marks_data = []
+    evolution_data = {}
+
+    attendances_data = [
+        {
+            'date': attendance.date.strftime('%d-%m-%Y'),
+            'present': attendance.present
+        }
+        for attendance in attendances if attendance.date is not None
+    ]
+
+    marks_data = [
+        {
+            'mark_1': item.mark_1,
+            'mark_2': item.mark_2,
+            'mark_3': item.mark_3,
+            'average': item.average
+        }
+        for item in marks
+    ]
+
+    evolution_data = {
+        'registration_status': registration_status,
+        'teacher': teacher,
+        'classQuantity': class_quantity,
+        'courseStatus': course.status,
+        'courseName': course.name,
+        'attendances': attendances_data,
+        'marks': marks_data
+    }
+
+    return JsonResponse(evolution_data, safe=False)

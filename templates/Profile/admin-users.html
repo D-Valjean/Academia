@@ -1,0 +1,38 @@
+<h5>Lista de USUARIOS</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre y Apellido</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Rol</th>
+            <th class='text-center' scope="col">Aciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for user_profile in user_profiles  %}
+
+            {% if user_profile.groups|join:', ' == 'estudiante' %}
+                <tr class="table-primary">
+            {% elif user_profile.groups|join:', ' == 'profesor' %}
+                <tr class="table-success">
+            {% elif user_profile.groups|join:', ' == 'director' %}
+                <tr class="table-secondary">
+            {% elif user_profile.groups|join:', ' == 'administrativo' %}
+                <tr class="table-info">
+            {% endif %}
+                    <th scope="row">{{ user_profile.user.get_full_name }}</th>
+                    <td>{{ user_profile.user.username }}</td>
+                    <td>{{ user_profile.groups|join:', '|capfirst }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-info">Info</button>
+                        <button class="btn btn-sm btn-warning">Editar</button>
+                    </td>
+                </tr>
+        {% endfor %}
+
+        </tr>
+    </tbody>
+</table>
+
+<button class='btn btn-primary'>Agregar Usuario</button>
