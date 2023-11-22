@@ -514,52 +514,7 @@ class AddAttendanceView(TemplateView):
 
         return redirect('list_attendance', course_id=course_id)
 
-
 # CONSULTAR EVOLUCION DEL ESTUDIANTE
-def evolution(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    teacher = course.teacher.get_full_name()
-    class_quantity = course.class_quantity
-    student = request.user
-
-    # Obtengo el estado regular o irregular del estudiante
-    registration = Registration.objects.filter(
-        course=course, student=student).values('enabled').first()
-
-    # Obtengo las asistencias
-    attendances = Attendance.objects.filter(course=course, student=student)
-
-    # Obtengo las notas
-    marks = Mark.objects.filter(course=course, student=student)
-
-    # Preparo la informacion para enviar al template
-    attendances_data = [
-        {
-            'date': attendance.date.strftime('%d-%m-%Y'),
-            'present': attendance.present
-        }
-        for attendance in attendances if attendance.date is not None
-    ]
-
-    marks_data = [
-        {
-            'mark_1': mark.mark_1,
-            'mark_2': mark.mark_2,
-            'mark_3': mark.mark_3,
-            'average': mark.average
-        }
-        for mark in marks
-    ]
-
-    evolution_data = {
-        'registration': registration,
-        'teacher': teacher,
-        'class_quantity': class_quantity,
-        'courseName': course.name,
-        'attendances': attendances_data,
-        'marks': marks_data
-    }
-    return JsonResponse(evolution_data, safe=False)
 
 
 def evolution(request, course_id):

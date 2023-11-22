@@ -26,5 +26,5 @@ urlpatterns = [
          login_required(AttendanceListView.as_view()), name='list_attendance'),
     path('courses/<int:course_id>/attendance/add/',
          login_required(AddAttendanceView.as_view()), name='add_attendance'),
-    path('evolution/<int:course_id>', login_required(evolution), name='evolution'),
-]
+    # evolucion del estudiante
+    path('evolution/<int:course_id>/', login_required(evolution), name='evolution'),]
