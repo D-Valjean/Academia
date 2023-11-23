@@ -19,7 +19,8 @@ from django.conf import settings
 from datetime import datetime
 from django.http import JsonResponse
 import os
-
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth import update_session_auth_hash
 # Create your views here.
 
 
@@ -560,3 +561,26 @@ def evolution(request, course_id):
     }
 
     return JsonResponse(evolution_data, safe=False)
+
+
+# Cambiar Contrase;a
+@add_group_name_to_context
+class ProfilePasswordChangeView(PasswordChangeView):
+    template_name = 'Profile/change_password.html'
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['password_changed'] = self.request.session.get(
+            'password_changed', False)
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Contraseña cambiada con exito')
+        update_session_auth_hash(self.request, form.user)
+        self.request.session['password_changed'] = True
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al cambiar la contraseña')
+        return super().form_invalid(form)

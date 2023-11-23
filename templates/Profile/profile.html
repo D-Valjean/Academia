@@ -15,14 +15,15 @@
                         <p><strong>Teléfono:  </strong>{{ user.profile.telephone }}</p>
                         <p><strong>Correo electrónico:  </strong>{{ user.email }}</p>
                         <hr>
+                        {% if request.user.username == 'admin'  %}
+                        <a class="btn btn-info w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
+                        {% endif %}
+                        <a class ="btn btn-secondary w-100 mb-1" href="{% url 'profile_password_change' %}">Cambiar Contraseña</a>
+                        <hr>
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-light w-100 mb-1" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <button type="button" class="btn btn-light w-100 mb-1 border-dark" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                         Editar Perfil
                         </button>
-
-                        {% if request.user.username == 'admin'  %}
-                            <a class="btn btn-info w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
-                        {% endif %}
                         <a class="btn btn-danger w-100" href="{% url 'logout' %}">Cerrar sesión</a>
                     </div>
                 </div>
