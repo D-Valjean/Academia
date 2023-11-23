@@ -64,3 +64,9 @@ class CourseForm(forms.ModelForm):
         Field('status'),
         Submit('submit', 'Submit')
     )
+
+
+class UserCreationform(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']

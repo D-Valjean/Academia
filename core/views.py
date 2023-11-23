@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import Group, User
-from .forms import RegisterForm, UserForm, ProfileForm, CourseForm
+from .forms import RegisterForm, UserForm, ProfileForm, CourseForm, UserCreationform
 from django.views import View
 from django.utils.decorators import method_decorator
 from .forms import RegisterForm, ProfileForm, UserForm
@@ -14,7 +14,7 @@ from django.utils.decorators import method_decorator
 from .models import Course, Registration, Attendance, Mark
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.conf import settings
 from datetime import datetime
 from django.http import JsonResponse
@@ -69,35 +69,6 @@ def add_group_name_to_context(view_class):
 
     view_class.dispatch = dispatch
     return view_class
-
-
-# class CustumTemplateView(TemplateView):
-#     group_name = None
-#     group_name_singular = None
-#     color = None
-
-#     def get_contex_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         user = self.request.user  # ruser = request.user from the request
-#         if user.is_authenticated:
-#             group = Group.objects
-#             if group:
-#                 if group.name == 'estudiantes':
-#                     self.color = 'bg-primary'
-#                 elif group.name == 'profesores':
-#                     self.color = 'bg-success'
-#                 elif group.name == 'director':
-#                     self.color = 'bg-secondary'
-#                 elif group.name == 'administrativos':
-#                     self.color = 'bg-danger'
-
-#                 self.group_name = group.name
-#                 self.group_name_singular = plural_to_singular(group.name)
-#         context['group_name'] = self.group_name
-#         context['group_name_singular'] = self.group_name_singular
-#         context['color'] = self.color
-
-#         return context
 
 
 @add_group_name_to_context
@@ -483,7 +454,7 @@ class AddAttendanceView(TemplateView):
     template_name = 'add_attendance.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  # Jalo los fatos a una variable
+        context = super().get_context_data(**kwargs)  # Jalo los falta a una variable
         # Se crea una variable con espacio para almacenar los datos
         course_id = kwargs['course_id']
         # Consulto en la traba couse todos los id, y los relaciono con course_id, que luego lo almaceno en la variable course
@@ -584,3 +555,51 @@ class ProfilePasswordChangeView(PasswordChangeView):
     def form_invalid(self, form):
         messages.error(self.request, 'Error al cambiar la contraseña')
         return super().form_invalid(form)
+
+# Agregar un Nuevo Usuaro
+
+
+@add_group_name_to_context
+class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
+    model = User
+    form_class = UserCreationform
+    template_name = 'add_user.html'
+    success_url = '/profile/'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        groups = Group.objects.all()
+        singular_groups = [plural_to_singular(
+            group.name).capitalize() for group in groups]
+        context['groups'] = zip(groups, singular_groups)
+        return context
+
+    def form_valid(self, form):
+        # Obtener el grupo que seleccionó
+        group_id = self.request.POST['group']
+        group = Group.objects.get(id=group_id)
+
+        # Crear usuario sin guardarlo aún
+        user = form.save(commit=False)
+
+        # Colocamos una contraseña por defecto -Aca podría ir la lógica para crear una contraseña aleatoria-
+        user.set_password('contraseña')
+
+        # Convertir a un usuario al staff
+        if group_id != '1':
+            user.is_staff = True
+
+        # Creamos el usuario
+        user.save()
+
+        # Agregamos el usuario al grupo seleccionado
+        user.groups.clear()
+        user.groups.add(group)
+
+        return super().form_valid(form)

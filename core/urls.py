@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView, AttendanceListView, AddAttendanceView, evolution, ProfilePasswordChangeView
+from .views import HomeView, PricingView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView, AttendanceListView, AddAttendanceView, evolution, ProfilePasswordChangeView, AddUserView
 # esto es para proteger las rutas de la web para que usuarios no autorizados no puedan acceder
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -32,4 +32,6 @@ urlpatterns = [
     # cambio de contrase;a
     path('password_change/', login_required(ProfilePasswordChangeView.as_view()),
          name='profile_password_change'),
+    # agregar Nuevo usuario
+    path('add_user/', login_required(AddUserView.as_view()), name='add_user'),
 ]
