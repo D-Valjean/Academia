@@ -43,6 +43,7 @@
                                 <label for="group" class="form-label">Grupo</label>
                                 <select name="group" id="group" class="form-control">
                                     <option disabled selected>Seleccione un grupo</option>
+                                    {% comment %} recorrer el zip que creamos y muestre la lista de grupos {% endcomment %}
                                     {% for group, singular_group in groups %}
                                     <option value="{{ group.id }}">{{ singular_group }}</option>
                                     {% endfor %}

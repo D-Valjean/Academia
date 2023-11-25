@@ -2,7 +2,7 @@
     {% if request.user.is_authenticated %}
         <a class="btn btn-lg btn-danger" href='{% url "logout" %}'>Cerrar Sesion</a>
     {% else %}
-        <a class="btn btn-lg btn-primary" href='{% url "login" %}'>Iniciar Sesion</a>
+        <a class="btn btn-lg btn-primary" href='{% url "custom_login" %}'>Iniciar Sesion</a>
         <a class="btn btn-lg btn-warning" href='{% url "register" %}'>Registrarse</a>
     {% endif %}
 </Div>

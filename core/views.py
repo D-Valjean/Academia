@@ -19,8 +19,9 @@ from django.conf import settings
 from datetime import datetime
 from django.http import JsonResponse
 import os
-from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.views import PasswordChangeView, LoginView
 from django.contrib.auth import update_session_auth_hash
+from accounts.models import Profile
 # Create your views here.
 
 
@@ -81,7 +82,7 @@ class PricingView(TemplateView):
     template_name = 'pricing.html'
 
 
-# REGISTRO DE USUARIO
+# REGISTRO DE USUARIO por temporada
 class RegisterView(View):
     def get(self, request):
         data = {
@@ -97,6 +98,9 @@ class RegisterView(View):
             user = authenticate(username=user_creation_form.cleaned_data['username'],
                                 password=user_creation_form.cleaned_data['password1'])
             login(request, user)
+            # actualizar created_by_admin
+            user.profile.created_by_admin = False
+            user.profile.save()
             return redirect('home')
         data = {
             'form': user_creation_form
@@ -547,6 +551,10 @@ class ProfilePasswordChangeView(PasswordChangeView):
         return context
 
     def form_valid(self, form):
+        # actualizar created_by_admin
+        profile = Profile.objects.get(user=self.request.user)
+        profile.created_by_admin = False
+        profile.save()
         messages.success(self.request, 'Contraseña cambiada con exito')
         update_session_auth_hash(self.request, form.user)
         self.request.session['password_changed'] = True
@@ -577,6 +585,7 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         groups = Group.objects.all()
         singular_groups = [plural_to_singular(
             group.name).capitalize() for group in groups]
+        # print(singular_groups)para validar que se esta haciendo
         context['groups'] = zip(groups, singular_groups)
         return context
 
@@ -589,7 +598,7 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         user = form.save(commit=False)
 
         # Colocamos una contraseña por defecto -Aca podría ir la lógica para crear una contraseña aleatoria-
-        user.set_password('contraseña')
+        user.set_password('Inicio01')
 
         # Convertir a un usuario al staff
         if group_id != '1':
@@ -603,3 +612,25 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         user.groups.add(group)
 
         return super().form_valid(form)
+
+
+# login Personalizado
+@add_group_name_to_context
+class CustomloginView(LoginView):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        profile = self.request.user.profile
+
+        # validar el valor del campo create_by_admin
+        if profile.created_by_admin:
+            messages.info(self.request, 'Bienvenido cambie su contrase;a')
+            response['Location'] = reverse_lazy('profile_password_change')
+            response.status_code = 302
+        else:
+            # Do something if the value of create_by_admin is False
+            pass
+        return response
+
+    def get_success_url(self):
+        return super().get_success_url()
