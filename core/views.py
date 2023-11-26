@@ -4,7 +4,7 @@ from django.db import models
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.models import Group, User
 from .forms import RegisterForm, UserForm, ProfileForm, CourseForm, UserCreationform
 from django.views import View
@@ -38,28 +38,37 @@ def plural_to_singular(plural):
     return plural_singular.get(plural, "error")
 
 
+# obtener color y grupo de usuario
+def get_user_group(request):
+    user = request.user
+    group = user.groups.first()
+    group_name = None
+    group_name_singular = None
+    color = None
+    if group:
+        if group.name == 'estudiantes':
+            color = 'bg-primary'
+        elif group.name == 'profesores':
+            color = 'bg-success'
+        elif group.name == 'director':
+            color = 'bg-secondary'
+        elif group.name == 'administrativos':
+            color = 'bg-info'
+
+        group_name = group.name
+        group_name_singular = plural_to_singular(group.name)
+
+    return group_name, group_name_singular, color
+
 # Esta funcion nos permite agregar el nombre del grupo al contexto,de esta forma no tenemos que validar el usuario en cada funcion, lo englobamos en uno sola
+
+
 def add_group_name_to_context(view_class):
     original_dispatch = view_class.dispatch
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-        group = user.groups.first()
-        group_name = None
-        group_name_singular = None
-        color = None
-        if group:
-            if group.name == 'estudiantes':
-                color = 'bg-primary'
-            elif group.name == 'profesores':
-                color = 'bg-success'
-            elif group.name == 'director':
-                color = 'bg-secondary'
-            elif group.name == 'administrativos':
-                color = 'bg-info'
-
-            group_name = group.name
-            group_name_singular = plural_to_singular(group.name)
+        group_name, group_name_singular, color = get_user_group(user)
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
@@ -169,8 +178,10 @@ class ProfileView(TemplateView):
             context['finalized_courses'] = finalized_courses
             # Obtener todos los cursos asignados al administrativo
         elif user.groups.first().name == 'administrativos':
-            # Obtener todos los Usuarios
-            all_user = User.objects.all()
+           # Jalar todos menos administrativo
+            admin_group = Group.objects.get(name='administrativos')
+           # Obtener todos los Usuarios
+            all_user = User.objects.exclude(groups__in=[admin_group])
             all_groups = Group.objects.all()
             user_profiles = []
             for user in all_user:
@@ -634,3 +645,15 @@ class CustomloginView(LoginView):
 
     def get_success_url(self):
         return super().get_success_url()
+
+
+# vista de perfil de un usuario desde admin
+@add_group_name_to_context
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = 'user_detail.html'
+    context_object_name = 'user_profile'
+
+    def get_context_data(self, **kwargs):  # Jalar data de accounts
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
