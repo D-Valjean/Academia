@@ -27,7 +27,7 @@ urlpatterns = [
     path('courses/<int:course_id>/attendance/add/',
          login_required(AddAttendanceView.as_view()), name='add_attendance'),
     # evolucion del estudiante
-    path('evolution/<int:course_id>/',
+    path('evolution/<int:course_id>/<int:student_id>/',
          login_required(evolution), name='evolution'),
     # cambio de contrase;a
     path('password_change/', login_required(ProfilePasswordChangeView.as_view()),

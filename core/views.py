@@ -39,18 +39,18 @@ def plural_to_singular(plural):
 
 
 # obtener color y grupo de usuario
-def get_user_group(request):
-    user = request.user
+def get_group_and_color(user):
     group = user.groups.first()
     group_name = None
     group_name_singular = None
     color = None
+
     if group:
         if group.name == 'estudiantes':
             color = 'bg-primary'
         elif group.name == 'profesores':
             color = 'bg-success'
-        elif group.name == 'director':
+        elif group.name == 'preceptores':
             color = 'bg-secondary'
         elif group.name == 'administrativos':
             color = 'bg-info'
@@ -68,7 +68,7 @@ def add_group_name_to_context(view_class):
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-        group_name, group_name_singular, color = get_user_group(user)
+        group_name, group_name_singular, color = get_group_and_color(user)
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
@@ -144,6 +144,7 @@ class ProfileView(TemplateView):
 
         elif user.groups.first().name == 'estudiantes':
             # Obtener todos los cursos asignados al estudiante
+            student_id = user.id
             registration = Registration.objects.filter(
                 student=user)
             enrolled_courses = []
@@ -163,6 +164,7 @@ class ProfileView(TemplateView):
             context['inscription_course'] = inscription_course
             context['progress_course'] = progress_course
             context['finalized_courses'] = finalized_courses
+            context['student_id'] = student_id
 
         elif user.groups.first().name == 'director':
             # Obtener todos los cursos asignados al director
@@ -426,7 +428,7 @@ class AttendanceListView(ListView):
             'student__id', 'student__first_name', 'student__last_name', 'enable')
 
         all_dates = Attendance.objects.filter(
-            course=course, date__isnull=False).values_list('date', flat=True).distinct()
+            course=course, date__isnull=False).values_list('date', flat=True).distinct().order_by('date')
         # [('2023-08-22'), ('2023-08-29')]
         # ('2023-08-22', '2023-08-29') => flat=True
         remaining_classes = course.class_quantity - all_dates.count()
@@ -481,12 +483,16 @@ class AddAttendanceView(TemplateView):
         return context
 
     def post(self, request, course_id):
+        date = request.POST.get('date')
         course = Course.objects.get(id=course_id)
         registrations = Registration.objects.filter(course=course)
 
-        if request.method == 'POST':
-            date = request.POST.get('date')
-
+        if Attendance.objects.filter(course=course, date=date).exists():
+            # Aquí puedes manejar el caso cuando la fecha ya existe, por ejemplo, puedes mostrar un mensaje de error
+            messages.error(request, 'La fecha ya existe para este curso.')
+            return redirect('add_attendance', course_id=course_id)
+        else:
+            # Aquí puedes continuar con tu lógica si la fecha no existe en la base de datos
             for registration in registrations:
                 present = request.POST.get(
                     'attendance_' + str(registration.student.id))
@@ -497,18 +503,18 @@ class AddAttendanceView(TemplateView):
                     attendance.date = date
                     attendance.present = bool(present)
                     attendance.save()
-                    attendance.update_registration_enable_status()
+                    attendance.update_registration_enabled_status()
 
         return redirect('list_attendance', course_id=course_id)
 
+
 # CONSULTAR EVOLUCION DEL ESTUDIANTE
 
-
-def evolution(request, course_id):
+def evolution(request, course_id, student_id):
     course = get_object_or_404(Course, id=course_id)
     teacher = course.teacher.get_full_name()
     class_quantity = course.class_quantity
-    student = request.user
+    student = student_id
     registration_status = Registration.objects.filter(
         course=course, student=student).values('enabled').first()
     attendances = Attendance.objects.filter(course=course, student=student)
@@ -656,4 +662,54 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):  # Jalar data de accounts
         context = super().get_context_data(**kwargs)
-        user = self.request.user
+        user = self.get_object()
+        group_name, group_name_singular, color = get_group_and_color(user)
+        context['group_name_user'] = group_name
+        context['group_name_singular_user'] = group_name_singular
+        context['color_user'] = color
+        if user.groups.first().name == 'profesores':
+            # Obtener todos los cursos asignados al profesor
+            assigned_courses = Course.objects.filter(
+                teacher=user).order_by('-id')
+            inscription_courses = assigned_courses.filter(status='I')
+            progress_courses = assigned_courses.filter(status='P')
+            finalized_courses = assigned_courses.filter(status='F')
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+
+        elif user.groups.first().name == 'estudiantes':
+            # Obtener todos los cursos donde esta inscripto el estudiante
+            student_id = user.id
+            registrations = Registration.objects.filter(student=user)
+            enrolled_courses = []
+            inscription_courses = []
+            progress_courses = []
+            finalized_courses = []
+
+            for registration in registrations:
+                course = registration.course
+                enrolled_courses.append(course)
+
+                if course.status == 'I':
+                    inscription_courses.append(course)
+                elif course.status == 'P':
+                    progress_courses.append(course)
+                elif course.status == 'F':
+                    finalized_courses.append(course)
+
+            context['student_id'] = student_id
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+
+        elif user.groups.first().name == 'preceptores':
+            # Obtener todos los cursos existentes
+            all_courses = Course.objects.all()
+            inscription_courses = all_courses.filter(status='I')
+            progress_courses = all_courses.filter(status='P')
+            finalized_courses = all_courses.filter(status='F')
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+        return context
