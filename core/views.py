@@ -41,6 +41,7 @@ def plural_to_singular(plural):
 # obtener color y grupo de usuario
 def get_group_and_color(user):
     group = user.groups.first()
+    group_id = None
     group_name = None
     group_name_singular = None
     color = None
@@ -55,10 +56,12 @@ def get_group_and_color(user):
         elif group.name == 'administrativos':
             color = 'bg-info'
 
+        group_id = group.id
+
         group_name = group.name
         group_name_singular = plural_to_singular(group.name)
 
-    return group_name, group_name_singular, color
+    return group_name, group_name_singular, color, group_id
 
 # Esta funcion nos permite agregar el nombre del grupo al contexto,de esta forma no tenemos que validar el usuario en cada funcion, lo englobamos en uno sola
 
@@ -68,7 +71,8 @@ def add_group_name_to_context(view_class):
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-        group_name, group_name_singular, color = get_group_and_color(user)
+        group_name, group_name_singular, color, group_id = get_group_and_color(
+            user)
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
@@ -663,10 +667,21 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):  # Jalar data de accounts
         context = super().get_context_data(**kwargs)
         user = self.get_object()
-        group_name, group_name_singular, color = get_group_and_color(user)
+        group_name, group_name_singular, color, group_id = get_group_and_color(
+            user)
+        # Obtengo todos los grupos
+        groups = Group.objects.all()
+        singular_names = [plural_to_singular(
+            group.name).capitalize() for group in groups]
+        groups_ids = [group.id for group in groups]
+        singular_groups = zip(singular_names, groups_ids)
+
         context['group_name_user'] = group_name
         context['group_name_singular_user'] = group_name_singular
         context['color_user'] = color
+        context['group_id_user'] = group_id
+        context['singular_groups'] = singular_groups
+
         if user.groups.first().name == 'profesores':
             # Obtener todos los cursos asignados al profesor
             assigned_courses = Course.objects.filter(
@@ -703,7 +718,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
 
-        elif user.groups.first().name == 'preceptores':
+        elif user.groups.first().name == 'director':
             # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
             inscription_courses = all_courses.filter(status='I')
@@ -713,3 +728,32 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
         return context
+
+# grabacion de datos de un usuario por admin
+
+
+def super_user_edit(request, user_id):
+    if not request.user.is_superuser:
+        return redirect('error')
+
+    user = User.objects.get(pk=user_id)
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=user.profile)
+        profile_form = ProfileForm(
+            request.POST, request.FILES, instance=user.profile)
+        group = request.POST.get('group')
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            user.groups.clear()
+            user.groups.add(group)
+            return redirect('user_detail', pk=user_id)
+        else:
+            user_form = UserForm(instance=user)
+            profile_form = ProfileForm(instance=user.profile)
+
+        context = {
+            'user_form': user_form,
+            'profile_form': profile_form,
+        }
+        return render(request, 'profile/user_detail.html', context)
