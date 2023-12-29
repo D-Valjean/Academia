@@ -1,44 +1,39 @@
-from django.db.models.query import QuerySet
-from typing import Any
-from django.db import models
-from django.http.response import HttpResponseRedirect
+import os
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView, DetailView
-from django.contrib.auth.models import Group, User
-from .forms import RegisterForm, UserForm, ProfileForm, CourseForm, UserCreationform
+from django.contrib.auth.models import Group
+from .forms import RegisterForm, UserForm, ProfileForm, CourseForm, UserCreationForm
 from django.views import View
-from django.utils.decorators import method_decorator
-from .forms import RegisterForm, ProfileForm, UserForm
-from django.utils.decorators import method_decorator
-from .models import Course, Registration, Attendance, Mark
+from .models import Course, Registration, Mark, Attendance
+from django.contrib.auth.models import User
+from accounts.models import Profile
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.conf import settings
-from datetime import datetime
 from django.http import JsonResponse
-import os
-from django.contrib.auth.views import PasswordChangeView, LoginView
+from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import update_session_auth_hash
-from accounts.models import Profile
-# Create your views here.
+from django.contrib.auth.views import LoginView
+
+# FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
 
 
-# Pasar al momento de ver en la aplicacion los grupos que se crearon en Django a singular
 def plural_to_singular(plural):
     # Diccionario de palabras
     plural_singular = {
         "estudiantes": "estudiante",
         "profesores": "profesor",
-        "director": "director",
+        "preceptores": "preceptor",
         "administrativos": "administrativo",
     }
 
     return plural_singular.get(plural, "error")
 
+# OBTENER COLOR Y GRUPO DE UN USUARIO
 
-# obtener color y grupo de usuario
+
 def get_group_and_color(user):
     group = user.groups.first()
     group_id = None
@@ -54,16 +49,15 @@ def get_group_and_color(user):
         elif group.name == 'preceptores':
             color = 'bg-secondary'
         elif group.name == 'administrativos':
-            color = 'bg-info'
+            color = 'bg-danger'
 
         group_id = group.id
-
         group_name = group.name
         group_name_singular = plural_to_singular(group.name)
 
-    return group_name, group_name_singular, color, group_id
+    return group_id, group_name, group_name_singular, color
 
-# Esta funcion nos permite agregar el nombre del grupo al contexto,de esta forma no tenemos que validar el usuario en cada funcion, lo englobamos en uno sola
+# DECORADOR PERSONALIZADO
 
 
 def add_group_name_to_context(view_class):
@@ -71,36 +65,44 @@ def add_group_name_to_context(view_class):
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-        group_name, group_name_singular, color, group_id = get_group_and_color(
+        group_id, group_name, group_name_singular, color = get_group_and_color(
             user)
+
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
             'color': color
         }
+
         self.extra_context = context
         return original_dispatch(self, request, *args, **kwargs)
 
     view_class.dispatch = dispatch
     return view_class
 
+# PAGINA DE INICIO
+
 
 @add_group_name_to_context
 class HomeView(TemplateView):
     template_name = 'home.html'
+
+# PAGINA DE PRECIOS
 
 
 @add_group_name_to_context
 class PricingView(TemplateView):
     template_name = 'pricing.html'
 
+# PAGINA DE PREGUNTAS Y RESPUESTAS / PAGINA DE ACERCA DE (A CARGO DE LOS SEGUIDORES DEL CANAL)
 
-# REGISTRO DE USUARIO por temporada
+# REGISTRO DE USUARIOS
+
+
 class RegisterView(View):
     def get(self, request):
         data = {
-            'form': RegisterForm(),
-            'title': 'REGISTRO DE USUARIO'
+            'form': RegisterForm()
         }
         return render(request, 'registration/register.html', data)
 
@@ -111,22 +113,25 @@ class RegisterView(View):
             user = authenticate(username=user_creation_form.cleaned_data['username'],
                                 password=user_creation_form.cleaned_data['password1'])
             login(request, user)
-            # actualizar created_by_admin
+
+            # Actualizar el campo created_by_admin del modelo Profile
             user.profile.created_by_admin = False
             user.profile.save()
+
             return redirect('home')
         data = {
             'form': user_creation_form
         }
         return render(request, 'registration/register.html', data)
 
+# PAGINA DE PERFIL
 
-# Pagina de Perfil
+
 @add_group_name_to_context
 class ProfileView(TemplateView):
-    template_name = 'Profile/profile.html'
+    template_name = 'profile/profile.html'
 
-    def get_context_data(self, **kwargs):  # Jalar data de accounts
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context['user_form'] = UserForm(instance=user)
@@ -136,85 +141,79 @@ class ProfileView(TemplateView):
             # Obtener todos los cursos asignados al profesor
             assigned_courses = Course.objects.filter(
                 teacher=user).order_by('-id')
-            inscription_courses = assigned_courses.filter(
-                status='I')
-            progress_courses = assigned_courses.filter(
-                status='P')
-            finalized_courses = assigned_courses.filter(
-                status='F')
+            inscription_courses = assigned_courses.filter(status='I')
+            progress_courses = assigned_courses.filter(status='P')
+            finalized_courses = assigned_courses.filter(status='F')
             context['inscription_courses'] = inscription_courses
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
 
         elif user.groups.first().name == 'estudiantes':
-            # Obtener todos los cursos asignados al estudiante
+            # Obtener todos los cursos donde esta inscripto el estudiante
             student_id = user.id
-            registration = Registration.objects.filter(
-                student=user)
+            registrations = Registration.objects.filter(student=user)
             enrolled_courses = []
-            inscription_course = []
-            progress_course = []
+            inscription_courses = []
+            progress_courses = []
             finalized_courses = []
-            for registration in registration:
+
+            for registration in registrations:
                 course = registration.course
                 enrolled_courses.append(course)
 
                 if course.status == 'I':
-                    inscription_course.append(course)
+                    inscription_courses.append(course)
                 elif course.status == 'P':
-                    progress_course.append(course)
+                    progress_courses.append(course)
                 elif course.status == 'F':
                     finalized_courses.append(course)
-            context['inscription_course'] = inscription_course
-            context['progress_course'] = progress_course
-            context['finalized_courses'] = finalized_courses
-            context['student_id'] = student_id
 
-        elif user.groups.first().name == 'director':
-            # Obtener todos los cursos asignados al director
-            all_courses = Course.objects.all()
-            inscription_courses = all_courses.filter(
-                status='I')
-            progress_courses = all_courses.filter(
-                status='P')
-            finalized_courses = all_courses.filter(
-                status='F')
+            context['student_id'] = student_id
             context['inscription_courses'] = inscription_courses
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
-            # Obtener todos los cursos asignados al administrativo
+
+        elif user.groups.first().name == 'preceptores':
+            # Obtener todos los cursos existentes
+            all_courses = Course.objects.all()
+            inscription_courses = all_courses.filter(status='I')
+            progress_courses = all_courses.filter(status='P')
+            finalized_courses = all_courses.filter(status='F')
+            context['inscription_courses'] = inscription_courses
+            context['progress_courses'] = progress_courses
+            context['finalized_courses'] = finalized_courses
+
         elif user.groups.first().name == 'administrativos':
-           # Jalar todos menos administrativo
+            # Obtengo todos los usuarios que no pertenecen al grupo administrativos
             admin_group = Group.objects.get(name='administrativos')
-           # Obtener todos los Usuarios
-            all_user = User.objects.exclude(groups__in=[admin_group])
+            all_users = User.objects.exclude(groups__in=[admin_group])
+
+            # Obtengo todos los grupos
             all_groups = Group.objects.all()
+
+            # Obtengo cada perfil de usuario
             user_profiles = []
-            for user in all_user:
+            for user in all_users:
                 profile = user.profile
                 user_groups = user.groups.all()
-                procesed_groups = [plural_to_singular(
-                    group.name) for group in user_groups]  # Pasar a Singular
+                processed_groups = [plural_to_singular(
+                    group.name) for group in user_groups]
                 user_profiles.append({
                     'user': user,
-                    'groups': procesed_groups,
+                    'groups': processed_groups,
                     'profile': profile
                 })
-            context['user_profiles'] = user_profiles
-            context['all_groups'] = all_groups
 
-            # Obtener todos los cursos
+            context['user_profiles'] = user_profiles
+
+            # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
-            inscription_courses = all_courses.filter(
-                status='I')
-            progress_courses = all_courses.filter(
-                status='P')
-            finalized_courses = all_courses.filter(
-                status='F')
+            inscription_courses = all_courses.filter(status='I')
+            progress_courses = all_courses.filter(status='P')
+            finalized_courses = all_courses.filter(status='F')
             context['inscription_courses'] = inscription_courses
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
-
         return context
 
     def post(self, request, *args, **kwargs):
@@ -226,25 +225,27 @@ class ProfileView(TemplateView):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-
+            # Redireccionar a la pagina de perfil (con datos actualizados)
             return redirect('profile')
 
-        contex = self.get_context_data()
-        contex['user_form'] = user_form
-        contex['profile_form'] = profile_form
-        return render(request, 'Profile/profile.html', contex)
+        # Si alguno de los datos no es valido
+        context = self.get_context_data()
+        context['user_form'] = user_form
+        context['profile_form'] = profile_form
+        return render(request, 'profile/profile.html', context)
+
+# MOSTRAR TODOS LOS CURSOS
 
 
-# Mostrar Cursos
 @add_group_name_to_context
 class CoursesView(TemplateView):
     template_name = 'courses.html'
 
-    def get_context_data(self, **kwargs):  # Jalar data de accounts
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         courses = Course.objects.all().order_by('-id')
-        # color = None
         student = self.request.user if self.request.user.is_authenticated else None
+
         for item in courses:
             if student:
                 registration = Registration.objects.filter(
@@ -252,17 +253,14 @@ class CoursesView(TemplateView):
                 item.is_enrolled = registration is not None
             else:
                 item.is_enrolled = False
-            enrollment_count = Registration.objects.filter(
-                course=item).count()
+
+            enrollment_count = Registration.objects.filter(course=item).count()
             item.enrollment_count = enrollment_count
-        # if courses.status == 'I':
-        #     color = 'bg-success'
-        # elif courses.status == 'P':
-        #     color = 'bg-warning'
-        # elif courses.status == 'F':
-        #     color = 'bg-danger'
+
         context['courses'] = courses
-        return context  # con esto ya tenemos todos los cursos de la base de datos
+        return context
+
+# PAGINA DE ERROR DE ACCESO A PAGINA NO PERMITIDA
 
 
 @add_group_name_to_context
@@ -271,62 +269,66 @@ class ErrorView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        error_image_path = os.path.join(settings.MEDIA_URL, 'error.webp')
+        error_image_path = os.path.join(settings.MEDIA_URL, 'error.png')
         context['error_image_path'] = error_image_path
         return context
 
+# CREAR UN NUEVO CURSO
 
-# Crear Cursos
+
 @add_group_name_to_context
 class CourseCreateView(UserPassesTestMixin, CreateView):
-    model = Course  # Definir el modelo el cual va trabajar
+    model = Course
     form_class = CourseForm
     template_name = 'create_course.html'
-    # Redireccionar a la pagina de cursos
     success_url = reverse_lazy('courses')
 
-    # Verificar si el usuario es administrativo y ningun otro tipo de usuario pueda acceder
     def test_func(self):
         return self.request.user.groups.filter(name='administrativos').exists()
 
-    def handle_no_permission(self) -> HttpResponseRedirect:
+    def handle_no_permission(self):
         return redirect('error')
 
     def form_valid(self, form):
-        messages.success(self.request, 'Curso creado con exito')
+        messages.success(
+            self.request, 'El registro se ha guardado correctamente')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Error al crear el curso')
+        messages.error(
+            self.request, 'Ha ocurrido un error al guardar el registro')
         return self.render_to_response(self.get_context_data(form=form))
 
+# EDICION DE UN CURSO
 
-# Edicion de un curso
+
 @add_group_name_to_context
 class CourseeditView(UserPassesTestMixin, UpdateView):
     model = Course
     form_class = CourseForm
     template_name = 'edit_course.html'
-    # Redireccionar a la pagina de cursos
     success_url = reverse_lazy('courses')
 
     def test_func(self):
         return self.request.user.groups.filter(name='administrativos').exists()
 
-    def handle_no_permission(self) -> HttpResponseRedirect:
+    def handle_no_permission(self):
         return redirect('error')
 
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, 'Curso editado con exito')
+        messages.success(
+            self.request, 'El registro se ha actualizado satisfactoriamente')
         return redirect(self.success_url)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Error al editar el curso')
+        messages.error(
+            self.request, 'Ha ocurrido un error al actualizar el registro')
         return self.render_to_response(self.get_context_data(form=form))
 
-
 # ELIMINACION DE UN REGISTRO
+
+
 @add_group_name_to_context
 class CourseDeleteView(UserPassesTestMixin, DeleteView):
     model = Course
@@ -344,30 +346,33 @@ class CourseDeleteView(UserPassesTestMixin, DeleteView):
             self.request, 'El registro se ha eliminado correctamente')
         return super().form_valid(form)
 
+# REGISTRO DE UN USUARIO EN UN CURSO
 
-# Registro de estudiante a curso
+
 @add_group_name_to_context
 class CourseEnrollmentView(TemplateView):
     def get(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
+
         if request.user.is_authenticated and request.user.groups.first().name == 'estudiantes':
             student = request.user
 
-            registration = Registration(student=student, course=course)
+            # Crear un registro de inscripción asociado al estudiante y el curso
+            registration = Registration(course=course, student=student)
             registration.save()
 
-            messages.success(
-                request, 'Se ha registrado el estudiante al curso')
+            messages.success(request, 'Inscripción exitosa')
         else:
-            messages.error(
-                request, 'No tienes permisos para realizar esta accion')
+            messages.error(request, 'No se pudo completar la inscripción')
+
         return redirect('courses')
 
+# MOSTRAR LISTA DE ALUMNOS Y NOTAS A LOS PROFESORES
 
-# Mostrar listas de alummnos y notas para profesores
+
 @add_group_name_to_context
 class StudentlistMarkView(TemplateView):
-    template_name = 'student_list.html'
+    template_name = 'student_list_mark.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -377,7 +382,7 @@ class StudentlistMarkView(TemplateView):
 
         student_data = []
         for mark in marks:
-            student = get_object_or_404(User, id=mark.student.id)
+            student = get_object_or_404(User, id=mark.student_id)
             student_data.append({
                 'mark_id': mark.id,
                 'name': student.get_full_name(),
@@ -390,8 +395,9 @@ class StudentlistMarkView(TemplateView):
         context['student_data'] = student_data
         return context
 
+# ACTUALIZAR NOTAS DE ALUMNOS
 
-# Actualizar Notas de Alumnos
+
 @add_group_name_to_context
 class UpdateMarkView(UpdateView):
     model = Mark
@@ -399,7 +405,7 @@ class UpdateMarkView(UpdateView):
     template_name = 'update_mark.html'
 
     def get_success_url(self):
-        return reverse_lazy('studentlist', kwargs={'course_id': self.object.course.id})
+        return reverse_lazy('student_list_mark', kwargs={'course_id': self.object.course.id})
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -429,12 +435,10 @@ class AttendanceListView(ListView):
         context = super().get_context_data(**kwargs)
         course = Course.objects.get(id=self.kwargs['course_id'])
         students = Registration.objects.filter(course=course).values(
-            'student__id', 'student__first_name', 'student__last_name', 'enable')
+            'student__id', 'student__first_name', 'student__last_name', 'enabled')
 
-        all_dates = Attendance.objects.filter(
-            course=course, date__isnull=False).values_list('date', flat=True).distinct().order_by('date')
-        # [('2023-08-22'), ('2023-08-29')]
-        # ('2023-08-22', '2023-08-29') => flat=True
+        all_dates = Attendance.objects.filter(course=course, date__isnull=False).values_list(
+            'date', flat=True).distinct().order_by('date')
         remaining_classes = course.class_quantity - all_dates.count()
 
         attendance_data = []
@@ -456,7 +460,7 @@ class AttendanceListView(ListView):
                 student_data = {
                     'student': student,
                     'attendance_status': attendance_status,
-                    'enable': student['enable']
+                    'enabled': student['enabled']
                 }
 
                 attendance_dict['attendance_data'].append(student_data)
@@ -475,12 +479,9 @@ class AddAttendanceView(TemplateView):
     template_name = 'add_attendance.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  # Jalo los falta a una variable
-        # Se crea una variable con espacio para almacenar los datos
+        context = super().get_context_data(**kwargs)
         course_id = kwargs['course_id']
-        # Consulto en la traba couse todos los id, y los relaciono con course_id, que luego lo almaceno en la variable course
         course = Course.objects.get(id=course_id)
-        # Consulto en registros todos los cursos en la base de tatos y lo relaciono con la variable course que arriba
         registrations = Registration.objects.filter(course=course)
         context['course'] = course
         context['registrations'] = registrations
@@ -511,8 +512,8 @@ class AddAttendanceView(TemplateView):
 
         return redirect('list_attendance', course_id=course_id)
 
+# CONSULTAR LA EVOLUCION DE UN ESTUDIANTE DADO
 
-# CONSULTAR EVOLUCION DEL ESTUDIANTE
 
 def evolution(request, course_id, student_id):
     course = get_object_or_404(Course, id=course_id)
@@ -558,11 +559,12 @@ def evolution(request, course_id, student_id):
 
     return JsonResponse(evolution_data, safe=False)
 
+# CAMBIAR LA CONTRASEÑA DEL USUARIO
 
-# Cambiar Contrase;a
+
 @add_group_name_to_context
 class ProfilePasswordChangeView(PasswordChangeView):
-    template_name = 'Profile/change_password.html'
+    template_name = 'profile/change_password.html'
     success_url = reverse_lazy('profile')
 
     def get_context_data(self, **kwargs):
@@ -572,26 +574,32 @@ class ProfilePasswordChangeView(PasswordChangeView):
         return context
 
     def form_valid(self, form):
-        # actualizar created_by_admin
+        # Actualizar el campo created_by_admin del modelo Profile
         profile = Profile.objects.get(user=self.request.user)
         profile.created_by_admin = False
         profile.save()
-        messages.success(self.request, 'Contraseña cambiada con exito')
+
+        messages.success(self.request, 'Cambio de contraseña exitoso')
         update_session_auth_hash(self.request, form.user)
         self.request.session['password_changed'] = True
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Error al cambiar la contraseña')
+        messages.error(
+            self.request,
+            'Hubo un error al momento de intentar cambiar la contraseña: {}.'.format(
+                form.errors.as_text()
+            )
+        )
         return super().form_invalid(form)
 
-# Agregar un Nuevo Usuaro
+# AGREGAR UN NUEVO USUARIO
 
 
 @add_group_name_to_context
 class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
     model = User
-    form_class = UserCreationform
+    form_class = UserCreationForm
     template_name = 'add_user.html'
     success_url = '/profile/'
 
@@ -606,7 +614,6 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         groups = Group.objects.all()
         singular_groups = [plural_to_singular(
             group.name).capitalize() for group in groups]
-        # print(singular_groups)para validar que se esta haciendo
         context['groups'] = zip(groups, singular_groups)
         return context
 
@@ -619,7 +626,7 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         user = form.save(commit=False)
 
         # Colocamos una contraseña por defecto -Aca podría ir la lógica para crear una contraseña aleatoria-
-        user.set_password('Inicio01')
+        user.set_password('contraseña')
 
         # Convertir a un usuario al staff
         if group_id != '1':
@@ -634,52 +641,54 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+# LOGIN PERSONALIZADO
 
-# login Personalizado
+
 @add_group_name_to_context
 class CustomloginView(LoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
 
+        # Acceder al perfil del usuario
         profile = self.request.user.profile
 
-        # validar el valor del campo create_by_admin
+        # Verificamos el valor del campo created_by_admin
         if profile.created_by_admin:
-            messages.info(self.request, 'Bienvenido cambie su contrase;a')
+            messages.info(
+                self.request, 'BIENVENIDO, Cambie su contraseña ahora !!!')
             response['Location'] = reverse_lazy('profile_password_change')
             response.status_code = 302
-        else:
-            # Do something if the value of create_by_admin is False
-            pass
+
         return response
 
     def get_success_url(self):
         return super().get_success_url()
 
+# VISUALIZACION DEL PERFIL DE UN USUARIO
 
-# vista de perfil de un usuario desde admin
+
 @add_group_name_to_context
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
-    template_name = 'user_detail.html'
+    template_name = 'user_details.html'
     context_object_name = 'user_profile'
 
-    def get_context_data(self, **kwargs):  # Jalar data de accounts
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.get_object()
-        group_name, group_name_singular, color, group_id = get_group_and_color(
+        group_id, group_name, group_name_singular, color = get_group_and_color(
             user)
+
         # Obtengo todos los grupos
         groups = Group.objects.all()
         singular_names = [plural_to_singular(
             group.name).capitalize() for group in groups]
         groups_ids = [group.id for group in groups]
         singular_groups = zip(singular_names, groups_ids)
-
+        context['group_id_user'] = group_id
         context['group_name_user'] = group_name
         context['group_name_singular_user'] = group_name_singular
         context['color_user'] = color
-        context['group_id_user'] = group_id
         context['singular_groups'] = singular_groups
 
         if user.groups.first().name == 'profesores':
@@ -718,7 +727,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
 
-        elif user.groups.first().name == 'director':
+        elif user.groups.first().name == 'preceptores':
             # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
             inscription_courses = all_courses.filter(status='I')
@@ -729,7 +738,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             context['finalized_courses'] = finalized_courses
         return context
 
-# grabacion de datos de un usuario por admin
+# GRABACION DE LOS DATOS DE UN USUARIO
 
 
 def super_user_edit(request, user_id):
@@ -738,22 +747,23 @@ def super_user_edit(request, user_id):
 
     user = User.objects.get(pk=user_id)
     if request.method == 'POST':
-        user_form = UserForm(request.POST, instance=user.profile)
+        user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(
             request.POST, request.FILES, instance=user.profile)
         group = request.POST.get('group')
 
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
+            profile_form.save()
             user.groups.clear()
             user.groups.add(group)
-            return redirect('user_detail', pk=user_id)
-        else:
-            user_form = UserForm(instance=user)
-            profile_form = ProfileForm(instance=user.profile)
+            return redirect('user_details', pk=user.id)
+    else:
+        user_form = UserForm(instance=user)
+        profile_form = ProfileForm(instance=user.profile)
 
-        context = {
-            'user_form': user_form,
-            'profile_form': profile_form,
-        }
-        return render(request, 'profile/user_detail.html', context)
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form
+    }
+    return render(request, 'profile/user_details.html', context)

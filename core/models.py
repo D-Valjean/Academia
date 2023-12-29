@@ -35,16 +35,15 @@ class Course(models.Model):
 class Registration(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
-    student = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='student_registration', limit_choices_to={'groups__name': 'estudiantes'}, verbose_name='estudiante')
-    # En la logica , enable lo tomamos como que el alumnos asiste a todas las clases, cuando el estudiante no asiste a todas las clases, lo tomamos como irregular
-    enable = models.BooleanField(default=True, verbose_name='Alumno Regular')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students_registration', limit_choices_to={
+                                'groups__name': 'estudiantes'}, verbose_name='Estudiante')
+    enabled = models.BooleanField(default=True, verbose_name='Alumno Regular')
 
     def __str__(self):
         return f'{self.student.username} - {self.course.name}'
 
-    class meta:
-        verbose_name = 'Inscripción'
+    class Meta:
+        verbose_name = 'Inscripción'
         verbose_name_plural = 'Inscripciones'
 
 

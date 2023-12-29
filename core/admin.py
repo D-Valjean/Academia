@@ -12,8 +12,8 @@ admin.site.register(Course, CourseAdmin)
 
 
 class RegistrationAdmin(admin.ModelAdmin):
-    list_display = ('course', 'student', 'enable')
-    list_filter = ('course', 'student', 'student__username', 'enable')
+    list_display = ('course', 'student', 'enabled')
+    list_filter = ('course', 'student', 'enabled')
 
 
 admin.site.register(Registration, RegistrationAdmin)
