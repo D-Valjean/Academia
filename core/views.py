@@ -25,7 +25,7 @@ def plural_to_singular(plural):
     plural_singular = {
         "estudiantes": "estudiante",
         "profesores": "profesor",
-        "preceptores": "preceptor",
+        "director": "director",
         "administrativos": "administrativo",
     }
 
@@ -46,10 +46,10 @@ def get_group_and_color(user):
             color = 'bg-primary'
         elif group.name == 'profesores':
             color = 'bg-success'
-        elif group.name == 'preceptores':
+        elif group.name == 'director':
             color = 'bg-secondary'
         elif group.name == 'administrativos':
-            color = 'bg-danger'
+            color = 'bg-info'
 
         group_id = group.id
         group_name = group.name
@@ -173,7 +173,7 @@ class ProfileView(TemplateView):
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
 
-        elif user.groups.first().name == 'preceptores':
+        elif user.groups.first().name == 'director':
             # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
             inscription_courses = all_courses.filter(status='I')
@@ -192,19 +192,19 @@ class ProfileView(TemplateView):
             all_groups = Group.objects.all()
 
             # Obtengo cada perfil de usuario
-            user_profiles = []
+            user_profile = []
             for user in all_users:
                 profile = user.profile
                 user_groups = user.groups.all()
                 processed_groups = [plural_to_singular(
                     group.name) for group in user_groups]
-                user_profiles.append({
+                user_profile.append({
                     'user': user,
                     'groups': processed_groups,
                     'profile': profile
                 })
 
-            context['user_profiles'] = user_profiles
+            context['user_profiles'] = user_profile
 
             # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
@@ -372,7 +372,7 @@ class CourseEnrollmentView(TemplateView):
 
 @add_group_name_to_context
 class StudentlistMarkView(TemplateView):
-    template_name = 'student_list_mark.html'
+    template_name = 'student_list.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -405,7 +405,7 @@ class UpdateMarkView(UpdateView):
     template_name = 'update_mark.html'
 
     def get_success_url(self):
-        return reverse_lazy('student_list_mark', kwargs={'course_id': self.object.course.id})
+        return reverse_lazy('studentlist', kwargs={'course_id': self.object.course.id})
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -429,6 +429,7 @@ class AttendanceListView(ListView):
 
     def get_queryset(self):
         course_id = self.kwargs['course_id']
+        # para que de una vez ordene por orden de fecha en la pagina
         return Attendance.objects.filter(course_id=course_id, date__isnull=False).order_by('date')
 
     def get_context_data(self, **kwargs):
@@ -670,7 +671,7 @@ class CustomloginView(LoginView):
 @add_group_name_to_context
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
-    template_name = 'user_details.html'
+    template_name = 'user_detail.html'
     context_object_name = 'user_profile'
 
     def get_context_data(self, **kwargs):
@@ -727,7 +728,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             context['progress_courses'] = progress_courses
             context['finalized_courses'] = finalized_courses
 
-        elif user.groups.first().name == 'preceptores':
+        elif user.groups.first().name == 'director':
             # Obtener todos los cursos existentes
             all_courses = Course.objects.all()
             inscription_courses = all_courses.filter(status='I')
@@ -757,7 +758,7 @@ def super_user_edit(request, user_id):
             profile_form.save()
             user.groups.clear()
             user.groups.add(group)
-            return redirect('user_details', pk=user.id)
+            return redirect('user_detail', pk=user.id)
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=user.profile)

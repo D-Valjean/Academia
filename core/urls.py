@@ -37,7 +37,7 @@ urlpatterns = [
 
     # PAGINAS ADMINISTRACION DE NOTAS: (LISTA DE ESTUDIANTES POR CURSO - EDICION DE NOTAS)
     path('courses/<int:course_id>',
-         login_required(StudentlistMarkView.as_view()), name='student_list_mark'),
+         login_required(StudentlistMarkView.as_view()), name='studentlist'),
     path('courses/update_mark/<int:mark_id>',
          login_required(UpdateMarkView.as_view()), name='update_mark'),
 
@@ -62,7 +62,7 @@ urlpatterns = [
     path('login/', CustomloginView.as_view(), name='custom_login'),
 
     # VISUALIZAR EL PERFIL DE UN USUARIO
-    path('user_details/<int:pk>/', UserDetailView.as_view(), name='user_details'),
+    path('user_details/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
 
     # EDITAR DATOS DEL USUARIO
     path('super_user_edit/<int:user_id>/',

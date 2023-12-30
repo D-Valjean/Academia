@@ -25,7 +25,7 @@
                     <td>{{ user_profile.user.username }}</td>
                     <td>{{ user_profile.groups|join:', '|capfirst }}</td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-info" href="{% url 'user_detail' user_profile.user.id %}">Info</a>
+                        <a class="btn btn-sm btn-info text-light" href="{% url 'user_detail' user_profile.user.id %}">Info</a>
                         <button class="btn btn-sm btn-warning">Editar</button>
                     </td>
                 </tr>

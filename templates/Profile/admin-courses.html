@@ -22,7 +22,7 @@
                         <td class='text-center'>{{ course.class_quantity }}</td>
                         <td class='text-center'>{{ enrollment_count }}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-info">Info</button>
+                            <button class="btn btn-sm btn-info text-light">Info</button>
                             <a class="btn btn-sm btn-warning" href="{% url 'course_edit' course.id %}">Editar</a>
                         </td>
                     </tr>
@@ -54,7 +54,7 @@
                         <td class='text-center'>{{ course.class_quantity }}</td>
                         <td class='text-center'>{{ enrollment_count }}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-info">Info</button>
+                            <button class="btn btn-sm btn-info text-light">Info</button>
                             {% comment %} <a class="btn btn-sm btn-warning" href="{% url 'course_edit' course.id %}">Editar</a> {% endcomment %}
                         </td>
                     </tr>
@@ -86,7 +86,7 @@
                         <td class='text-center'>{{ course.class_quantity }}</td>
                         <td class='text-center'>{{ enrollment_count }}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-info">Info</button>
+                            <button class="btn btn-sm btn-info text-light">Info</button>
                             {% comment %} <a class="btn btn-sm btn-warning" href="{% url 'course_edit' course.id %}">Editar</a> {% endcomment %}
                         </td>
                     </tr>
@@ -94,4 +94,4 @@
             {% endfor %}
     </table>
 {% endif %}
-<a class='btn btn-info' href= '{% url 'courses_create' %}'>Agregar Curso</a>
+<a class='btn btn-info text-light' href= '{% url 'course_create' %}'>Agregar Curso</a>

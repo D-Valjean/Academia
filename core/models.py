@@ -61,7 +61,7 @@ class Attendance(models.Model):
     # total de asistencias=> class_quantity del modulo Course
     # total inasistencias =>attendance => present =False
     # Porcentaje-inasistencia = (total_inasistencias/tataol_clases)*100 ------> >20 (>20)=> alumno es irregular =>enable=False
-    def update_registration_enable_status(self):
+    def update_registration_enabled_status(self):
         course_instances = Course.objects.get(id=self.course.id)
         total_classes = course_instances.class_quantity
         total_absences = Attendance.objects.filter(
@@ -125,5 +125,5 @@ class Mark(models.Model):
 
 @receiver(post_save, sender=Attendance)
 @receiver(post_delete, sender=Attendance)
-def update_registration_enable_status(sender, instance, **kwargs):
-    instance.update_registration_enable_status()
+def update_registration_enabled_status(sender, instance, **kwargs):
+    instance.update_registration_enabled_status()
