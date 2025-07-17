@@ -32,14 +32,14 @@
         {% endif %}
 
 
-        <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>
+        {% comment %} <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li> {% endcomment %}
         <li><a href="{% url 'courses' %}" class="nav-link px-2 text-white">Cursos</a></li>
 
 
         {% if not user.is_authenticated or group_name == 'estudiantes' %}
-            <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>
-            <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>
-            <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li>
+            {% comment %} <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li> {% endcomment %}
+            {% comment %} <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li> {% endcomment %}
+            {% comment %} <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li> {% endcomment %}
         {% endif %}
         </ul>
 
