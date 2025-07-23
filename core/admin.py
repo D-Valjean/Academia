@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Registration, Attendance, Mark
+from .models import Course, Registration, Attendance, Mark, Notifications
 # Register your models here.
 
 
@@ -34,3 +34,11 @@ class MarkAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Mark, MarkAdmin)
+
+
+class NotificationsAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_at')
+    list_filter = ('user',)
+
+
+admin.site.register(Notifications, NotificationsAdmin)

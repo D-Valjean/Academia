@@ -47,7 +47,7 @@
                 </ul>
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle user-badge" id="userDropdown" data-bs-toggle="dropdown">
+                        <a href="{% url 'profile' %}" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle user-badge" id="userDropdown" data-bs-toggle="dropdown">
                             <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" class="rounded-circle me-2" width="36" height="36">
                             <span>{{ user.username | upper }} | {{ group_name | upper }}</span>
                         </a>
@@ -55,7 +55,7 @@
                             <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i> Perfil</a></li>
                             {% comment %} <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Configuración</a></li> {% endcomment %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
                         </ul>
                     </div>
                 </div>

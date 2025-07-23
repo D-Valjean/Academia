@@ -120,6 +120,25 @@ class Mark(models.Model):
         verbose_name = 'Nota'
         verbose_name_plural = 'Notas'
 
+
+class Notifications(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='Usuario')
+    message = models.TextField(verbose_name='Mensaje')
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='Fecha de creación')
+    STATUS_CHOICES = (
+        ('I', 'Inscripción'),
+        ('P', 'Progreso'),
+        ('F', 'Finalizado'),
+        ('N', 'Nota'),
+    )
+
+    class Meta:
+        verbose_name = 'Notificación'
+        verbose_name_plural = 'Notificaciones'
+
+
 # Guardar notas en la base de datos
 
 
