@@ -1,105 +1,291 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="container my-3">
+    <div class="container py-4">
+        <!-- Encabezado mejorado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-0">Mi Perfil</h1>
+                <p class="text-muted mb-0">Informacion Personal y Consulta notas</p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="fas fa-edit me-2"></i>Editar Perfil
+                </button>
+            </div>
+        </div>
+        
         <div class="row">
-            <div class="col-md-4">
-                <div class="card border rounded-2 shadow p-3 mb-3">
-                    <div class="card-body">
-                        <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 100px;">
-                        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-                        <h4><span class="badge {{ color }}">{{ group_name_singular | capfirst }}</span></h4>
-                        <hr>
-                        <p><strong>Nombre de usuario: </strong>{{ user.username}}</p>
-                        <p><strong>Domicilio: </strong>{{ user.profile.address }} </p>
-                        <p><strong>Localidad: </strong>{{ user.profile.location }} </p>
-                        <p><strong>Teléfono:  </strong>{{ user.profile.telephone }}</p>
-                        <p><strong>Correo electrónico:  </strong>{{ user.email }}</p>
-                        <hr>
-                        {% if request.user.username == 'admin'  %}
-                        <a class="btn btn-info w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
-                        {% endif %}
-                        <a class ="btn btn-secondary w-100 mb-1" href="{% url 'profile_password_change' %}">Cambiar Contraseña</a>
-                        <hr>
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-light w-100 mb-1 border-dark" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                        Editar Perfil
-                        </button>
-                        <a class="btn btn-danger w-100" href="{% url 'logout' %}">Cerrar sesión</a>
+            <!-- Columna izquierda - Información personal -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-soft h-100">
+                    <div class="card-body text-center p-4">
+                        <!-- Avatar y badge de rol -->
+                        <div class="position-relative mx-auto mb-4" style="width: fit-content;">
+                            <img class="img-thumbnail rounded-circle" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 140px; height: 140px; object-fit: cover;">
+                            <span class="badge {{ color }} position-absolute bottom-0 end-0 p-2 rounded-pill">
+                                {{ group_name_singular | capfirst }}
+                            </span>
+                        </div>
+                        
+                        <!-- Nombre y username -->
+                        <h2 class="h4 mb-1">{{ user.first_name }} {{ user.last_name }}</h2>
+                        <p class="text-muted mb-4">@{{ user.username }}</p>
+                        
+                        <!-- Información de contacto -->
+                        <div class="border-top border-bottom py-3 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="icon-box-sm bg-light-primary text-primary me-3">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="text-start">
+                                    <small class="text-muted mb-0">Correo electrónico</small>
+                                    <p class="mb-0">{{ user.email }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="icon-box-sm bg-light-primary text-primary me-3">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div class="text-start">
+                                    <small class="text-muted mb-0">Teléfono</small>
+                                    <p class="mb-0">{{ user.profile.telephone }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box-sm bg-light-primary text-primary me-3">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="text-start">
+                                    <small class="text-muted mb-0">Dirección</small>
+                                    <p class="mb-0">{{ user.profile.address }}, {{ user.profile.location }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Acciones de perfil -->
+                        <div class="d-grid gap-2">
+                            {% if request.user.username == 'admin' %}
+                                <a class="btn btn-sm btn-outline-info mb-2" href="{% url 'admin:index' %}">
+                                    <i class="fas fa-cog me-2"></i>Ir al Admin
+                                </a>
+                            {% endif %}
+                            
+                            <a class="btn btn-sm btn-outline-secondary mb-2" href="{% url 'profile_password_change' %}">
+                                <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                            </a>
+                            
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-8">
-                <div class="card border rounded-2 shadow p-3 mb-3">
-                    <div class="card-body">
-                        {% comment %} Evaluar grupo al que pertecence {% endcomment %}
-                        {% if group_name == 'estudiantes' %}
-                            {% include 'profile/students.html' %}
-                        {% elif group_name == 'profesores' %}
-                            {% include 'profile/profesores.html' %}
-                        {% elif group_name == 'director' %}
-                            {% include 'profile/director.html' %}
-                        {% elif group_name == 'administrativos' %}
-                            {% include 'profile/admin.html' %}
-                        {% endif %}
-                    </div>
-            </div>
-        </div>
-            <!-- Modal -->
-        <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-
-                            <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            
+            <!-- Columna derecha - Contenido específico del rol -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-soft h-100">
+                    <div class="card-body p-4">
+                        <!-- Pestañas para diferentes secciones -->
+                        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </button>
+                            </li>
+                            {% if group_name == 'profesores' %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab">
+                                        <i class="fas fa-book me-2"></i>Mis Cursos
+                                    </button>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                                    <i class="fas fa-history me-2"></i>Actividad
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Contenido de las pestañas -->
+                        <div class="tab-content" id="profileTabsContent">
+                            <!-- Dashboard -->
+                            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                                {% comment %} Contenido específico del rol {% endcomment %}
+                                {% if group_name == 'estudiantes' %}
+                                    {% include 'profile/students.html' %}
+                                {% elif group_name == 'profesores' %}
+                                    {% include 'profile/profesores.html' %}
+                                {% elif group_name == 'director' %}
+                                    {% include 'profile/director.html' %}
+                                {% elif group_name == 'administrativos' %}
+                                    {% include 'profile/admin.html' %}
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Mis Cursos -->
+                            <div class="tab-pane fade" id="courses" role="tabpanel">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>Esta sección mostrará los cursos en los que estás inscrito.
+                                </div>
+                                <div class="d-flex justify-content-center py-5">
+                                    <div class="text-center">
+                                        <div class="icon-box-lg bg-light-primary text-primary mb-3 mx-auto">
+                                            <i class="fas fa-book-open"></i>
+                                        </div>
+                                        <h5 class="mb-2">No tienes cursos activos</h5>
+                                        <p class="text-muted mb-3">Inscríbete en un curso para empezar</p>
+                                        <a href="{% url 'courses' %}" class="btn btn-sm btn-primary">Explorar cursos</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actividad -->
+                            <div class="tab-pane fade" id="activity" role="tabpanel">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0 py-3">
+                                        <div class="d-flex">
+                                            <div class="icon-box-sm bg-light-success text-success me-3">
+                                                <i class="fas fa-user-check"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Completaste el curso de Programación Avanzada</h6>
+                                                <small class="text-muted">15 de Julio, 2023</small>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">Completado</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item px-0 py-3">
+                                        <div class="d-flex">
+                                            <div class="icon-box-sm bg-light-primary text-primary me-3">
+                                                <i class="fas fa-book"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Te inscribiste en el curso de Diseño UX/UI</h6>
+                                                <small class="text-muted">10 de Julio, 2023</small>
+                                            </div>
+                                            <span class="badge bg-warning text-dark rounded-pill">En progreso</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item px-0 py-3">
+                                        <div class="d-flex">
+                                            <div class="icon-box-sm bg-light-info text-info me-3">
+                                                <i class="fas fa-trophy"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Obtuviste un promedio de 9.2 en el curso de Marketing Digital</h6>
+                                                <small class="text-muted">5 de Julio, 2023</small>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">Excelente</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                        <form action="" method="POST" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                                <div class="d-flex">
-                                    <img class="mx-auto img-thumbnail rounded-circle mb-3 " src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 100px;">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="image">Imagen de perfil</label>
-                                <input class="form-control" type="file" name="image">
-                            </div>
-                            <div class="d-flex">
-                                <div class="mb-3 mr-3">
-                                    <label for="first_name">Nombre</label>
-                                    <input class="form-control" type="text" name="first_name" value="{{ user.first_name }}">
-                                </div>
-                                <div class="mb-3 mr-2">
-                                    <label for="last_name">Apellido</label>
-                                    <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
-                                </div>
-                                <div class="mb-3 mr-2">
-                                    <label for="address">Dirrecion</label>
-                                    <input class="form-control" type="text" name="address" value="{{ user.profile.address }}">
-                                </div>
-                                <div class="mb-3 mr-2">
-                                    <label for="location">Location</label>
-                                    <input class="form-control" type="text" name="location" value="{{ user.profile.location }}">
-                                </div>
-                            </div>
-                            <div class="d-flex">
-                                <div class="mb-3 mr-3">
-                                    <label for="first_name">Telefono</label>
-                                    <input class="form-control" type="text" name="telephone" value="{{ user.profile.telephone }}">
-                                </div>
-                                <div class="mb-3 mr-2">
-                                    <label for="last_name">Email</label>
-                                    <input class="form-control" type="text" name="email" value="{{ user.email }}" disabled>
-                                </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                <button type="summit" class="btn btn-primary">Guardar Cambios</button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Modal de edición de perfil -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-soft">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Columna izquierda - Imagen de perfil -->
+                            <div class="col-md-4 text-center">
+                                <div class="mb-4">
+                                    <img id="profileImagePreview" class="img-thumbnail rounded-circle mb-3" 
+                                         src="{{ user.profile.image.url }}" 
+                                         alt="{{ user.username }}" 
+                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Cambiar imagen</label>
+                                    <input class="form-control" type="file" name="image" id="image" accept="image/*">
+                                </div>
+                            </div>
+                            
+                            <!-- Columna derecha - Formulario -->
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="first_name" class="form-label">Nombre</label>
+                                        <input class="form-control" type="text" name="first_name" id="first_name" 
+                                               value="{{ user.first_name }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Apellido</label>
+                                        <input class="form-control" type="text" name="last_name" id="last_name" 
+                                               value="{{ user.last_name }}" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Correo electrónico</label>
+                                    <input class="form-control" type="email" name="email" id="email" 
+                                           value="{{ user.email }}" disabled>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="telephone" class="form-label">Teléfono</label>
+                                    <input class="form-control" type="text" name="telephone" id="telephone" 
+                                           value="{{ user.profile.telephone }}">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label for="address" class="form-label">Dirección</label>
+                                        <input class="form-control" type="text" name="address" id="address" 
+                                               value="{{ user.profile.address }}">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="location" class="form-label">Localidad</label>
+                                        <input class="form-control" type="text" name="location" id="location" 
+                                               value="{{ user.profile.location }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para vista previa de la imagen -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vista previa de la imagen de perfil
+            const imageInput = document.getElementById('image');
+            const preview = document.getElementById('profileImagePreview');
+            
+            if (imageInput && preview) {
+                imageInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock  %}

@@ -11,49 +11,55 @@
 {% else %}
     <header class="p-3 text-bg-dark bg-primary">
 {% endif %}
-<div class="container">
-    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-        <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-            ACADEMIA
-        </a>
+    <nav class="navbar navbar-expand-lg navbar-main">
+        <div class="container">
+            <a class="navbar-brand text-white" href="{% url 'home' %}">
+                <i class="fas fa-graduation-cap me-2"></i>ACADEMIA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon text-white">
+                    <i class="fas fa-bars"></i>
+                </span>
+            </button>
 
-        {% if user.is_authenticated %}
-            {% if group_name == 'estudiantes' %}
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-primary">
-            {% elif group_name == 'profesores' %}
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-success">
-            {% elif group_name == 'director' %}
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-secondary">
-            {% elif group_name == 'administrativos' %}
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-info">
-            {% endif %}
-        {% else %}
-            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-primary">
-        {% endif %}
-
-
-        {% comment %} <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li> {% endcomment %}
-        <li><a href="{% url 'courses' %}" class="nav-link px-2 text-white">Cursos</a></li>
-
-
-        {% if not user.is_authenticated or group_name == 'estudiantes' %}
-            {% comment %} <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li> {% endcomment %}
-            {% comment %} <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li> {% endcomment %}
-            {% comment %} <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li> {% endcomment %}
-        {% endif %}
-        </ul>
-
-        <div class="text-end">
-            {% if user.is_authenticated %}
-                <li style="list-style-type: none;">
-                    <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name_singular|capfirst }}
-                        | {{ user.username }}</a>
-                </li>
-            {% else %}
-                <a class="btn btn-outline-light me-2" href="{% url 'custom_login' %}">Iniciar Sesión</a>
-                <a class="btn btn-warning" href="{% url 'register' %}">Registrarse</a>
-            {% endif %}
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'courses' %}">
+                            <i class="fas fa-book me-1"></i> Cursos
+                        </a>
+                    </li>
+                    {% comment %} <li class="nav-item">
+                        <a class="nav-link text-white" href="#">
+                            <i class="fas fa-calendar-alt me-1"></i> Calendario
+                        </a>
+                    </li> {% endcomment %}
+                    {% comment %} <li class="nav-item">
+                        <a class="nav-link text-white" href="#">
+                            <i class="fas fa-chart-line me-1"></i> Reportes
+                        </a>
+                    </li> {% endcomment %}
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle user-badge" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" class="rounded-circle me-2" width="36" height="36">
+                            <span>{{ user.username | upper }} | {{ group_name | upper }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-soft rounded-xl">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i> Perfil</a></li>
+                            {% comment %} <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Configuración</a></li> {% endcomment %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </nav>
 </header>

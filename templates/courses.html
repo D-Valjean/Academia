@@ -1,64 +1,140 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class ="container my-4">
-        <div class = "row">
-            <div class = "col">
-                <h2>Nuestros Cursos</h2>
+    <div class="container py-4">
+        <!-- Encabezado mejorado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-0">Nuestros Cursos</h1>
+                <p class="text-muted mb-0">Explora nuestra oferta académica y encuentra el curso perfecto para ti</p>
             </div>
-            <div class = "col">
-                <span class='float-end'>
-                {% if group_name == 'administrativos' %}
-                    <a class="btn btn-info text-light" href="{% url 'course_create' %}">Agregar Curso</a>
-                {% endif %}
-                </span>
-            </div>
-        </div>
-        <hr>
-            {% comment %} Seccion de Mensajes, pregunta si hay mesajes en vista {% endcomment %}
-            {% if messages %}
-                <div class ='container mt-3'>
-                    {% for message in messages %}
-                        <div class="alert-success" role="alert">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+            {% if group_name == 'administrativos' %}
+                <a class="btn btn-primary" href="{% url 'course_create' %}">
+                    <i class="fas fa-plus me-2"></i>Agregar Curso
+                </a>
             {% endif %}
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-4">
-                {% for course in courses %}
-                    <div class="col">
-                        {% if course.status == 'I' %}
-                            <div class="card border-2 border-success">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-success">Inscriciones Abiertas</span></h5>
-                        {% elif course.status == 'P' %}
-                            <div class="card border-2 border-primary">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-primary">Curso En Progreso</span></h5>
-                        {% else %}
-                            <div class="card border-2 border-danger">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{course.name}} | <span class="badge bg-danger">Curso Finalizado</span></h5>
-                        {% endif %}
-                                {% comment %} <div class="card-body">
-                                    <h5 class="card-title">{{course.name}} <span class="badge bg-">{{course.status}}</span></h5> {% endcomment %}
-                                    <p class="card-text">{{course.description}}</p>
-                                    <p class="card-text"><strong>Profesor: </strong>{{course.teacher.first_name}} {{course.teacher.last_name}}</p>
-                                    <p class="card-text"><strong>Cantidad de Clases: </strong>{{course.class_quantity}}</p>
-                                    <p class="card-text"><strong>Cantidad de Inscriptos: </strong>{{course.enrollment_count}}</p>
-                                    {% if group_name == 'estudiantes' and not course.is_enrolled and course.status == 'I' %}
-                                            <a class="btn btn-sm btn-primary" href="{% url 'enroll_course' course.id %}">Anotarse</a>
-                                    {% elif course.is_enrolled %}
-                                        <h5><span class="badge bg-info"><strong> Ya estás inscrito</strong></span></h5>
-                                        <a class="btn btn-sm btn-warning" href="{% url 'profile' %}"><strong>Ir a Perfil</strong></a>
-                                    {% endif %}
-                                    {% if group_name == 'administrativos' %}
-                                        <a class="btn btn-sm btn-warning" href="{% url 'course_edit' course.id %}">Editar</a>
-                                        <a class="btn btn-sm btn-danger" href="{% url 'course_delete' course.id %}">Eleminar</a>
-                                    {% endif %}
-                                </div>
-                            </div>
+        </div>
+        
+        <hr class="mb-4">
+        
+        <!-- Mensajes con diseño mejorado -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             </div>
+        {% endif %}
+        
+        <!-- Filtros de estado -->
+        <div class="mb-4">
+            <h5 class="mb-3">Filtrar por estado:</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#" class="btn btn-sm btn-outline-primary active">Todos</a>
+                <a href="#" class="btn btn-sm btn-outline-success">Inscripciones Abiertas</a>
+                <a href="#" class="btn btn-sm btn-outline-warning">En Progreso</a>
+                <a href="#" class="btn btn-sm btn-outline-danger">Finalizados</a>
+            </div>
+        </div>
+        
+        <!-- Lista de cursos con diseño de tarjetas mejoradas -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for course in courses %}
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-soft">
+                        <div class="card-body position-relative">
+                            <!-- Badge de estado del curso -->
+                            {% if course.status == 'I' %}
+                                <span class="badge bg-success position-absolute top-0 end-0 mt-3 me-3">
+                                    <i class="fas fa-user-plus me-1"></i> Inscripciones Abiertas
+                                </span>
+                            {% elif course.status == 'P' %}
+                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3">
+                                    <i class="fas fa-sync-alt me-1"></i> En Progreso
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger position-absolute top-0 end-0 mt-3 me-3">
+                                    <i class="fas fa-flag-checkered me-1"></i> Finalizado
+                                </span>
+                            {% endif %}
+                            
+                            <!-- Título del curso -->
+                            <h5 class="card-title mb-3">{{ course.name }}</h5>
+                            
+                            <!-- Descripción -->
+                            <p class="card-text text-muted small mb-4">{{ course.description }}</p>
+                            
+                            <!-- Detalles del curso -->
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item px-0 py-1 d-flex align-items-center">
+                                    <i class="fas fa-chalkboard-teacher text-primary me-2"></i>
+                                    <span><strong>Profesor:</strong> {{ course.teacher.first_name }} {{ course.teacher.last_name }}</span>
+                                </li>
+                                <li class="list-group-item px-0 py-1 d-flex align-items-center">
+                                    <i class="fas fa-book-open text-primary me-2"></i>
+                                    <span><strong>Clases:</strong> {{ course.class_quantity }}</span>
+                                </li>
+                                <li class="list-group-item px-0 py-1 d-flex align-items-center">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    <span><strong>Inscritos:</strong> {{ course.enrollment_count }}</span>
+                                </li>
+                            </ul>
+                            
+                            <!-- Botones de acción -->
+                            <div class="d-grid gap-2">
+                                {% if group_name == 'estudiantes' %}
+                                    {% if not course.is_enrolled and course.status == 'I' %}
+                                        <a class="btn btn-sm btn-primary" href="{% url 'enroll_course' course.id %}">
+                                            <i class="fas fa-user-plus me-1"></i> Anotarse
+                                        </a>
+                                    {% elif course.is_enrolled %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-info p-2">
+                                                <i class="fas fa-check-circle me-1"></i> Ya estás inscrito
+                                            </span>
+                                            <a class="btn btn-sm btn-outline-primary" href="{% url 'profile' %}">
+                                                <i class="fas fa-user me-1"></i> Perfil
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if group_name == 'administrativos' %}
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-warning flex-fill" href="{% url 'course_edit' course.id %}">
+                                            <i class="fas fa-edit me-1"></i> Editar
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-danger flex-fill" href="{% url 'course_delete' course.id %}">
+                                            <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        <nav class="mt-5" aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 {% endblock  %}

@@ -17,6 +17,8 @@ class Profile(models.Model):
         max_length=50, null=True, blank=True, verbose_name='Teléfono')
     created_by_admin = models.BooleanField(
         default=True, blank=True, null=True, verbose_name='Creado por el administrador')
+    active = models.BooleanField(
+        default=True, blank=True, null=True, verbose_name='Activo')
 
     class Meta:
         verbose_name = 'perfil'

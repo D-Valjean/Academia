@@ -67,11 +67,33 @@ def add_group_name_to_context(view_class):
         user = self.request.user
         group_id, group_name, group_name_singular, color = get_group_and_color(
             user)
-
+        try:
+            profesores = 0
+            for user in User.objects.all():
+                for profile in Profile.objects.all():
+                    if profile.user == user:
+                        if user.groups.first().name == 'profesores':
+                            if profile.active == True:
+                                profesores += 1
+        except:
+            profesores = 0
+        try:
+            estudiantes = 0
+            for user in User.objects.all():
+                for profile in Profile.objects.all():
+                    if profile.user == user:
+                        if user.groups.first().name == 'estudiantes':
+                            if profile.active == True:
+                                estudiantes += 1
+        except:
+            estudiantes = 0
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
-            'color': color
+            'color': color,
+            'total_courses': Course.objects.exclude(status='F').count(),
+            'profesores': profesores,
+            'estudiantes': estudiantes
         }
 
         self.extra_context = context
@@ -80,23 +102,38 @@ def add_group_name_to_context(view_class):
     view_class.dispatch = dispatch
     return view_class
 
-# PAGINA DE INICIO
-
 
 @add_group_name_to_context
 class HomeView(TemplateView):
     template_name = 'home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
+        ).name == 'estudiantes' else None
+        teacher = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
+        ).name == 'profesores' else None
+        if student:
+            registrations = Registration.objects.filter(student=student)
+            courses = [registration.course for registration in registrations]
+        elif teacher:
+            courses = Course.objects.filter(teacher=teacher)
+        else:
+            courses = []
+
+        for item in courses:
+            item.is_enrolled = True
+            enrollment_count = Registration.objects.filter(course=item).count()
+            item.enrollment_count = enrollment_count
+
+        context['courses'] = courses
+        return context
 # PAGINA DE PRECIOS
 
 
 @add_group_name_to_context
 class PricingView(TemplateView):
     template_name = 'pricing.html'
-
-# PAGINA DE PREGUNTAS Y RESPUESTAS / PAGINA DE ACERCA DE (A CARGO DE LOS SEGUIDORES DEL CANAL)
-
-# REGISTRO DE USUARIOS
 
 
 class RegisterView(View):
