@@ -118,7 +118,7 @@ class HomeView(TemplateView):
             registrations = Registration.objects.filter(student=student)
             courses = [registration.course for registration in registrations]
             notification = Notifications.objects.filter(
-                user=student,).order_by('-id')
+                user=student,).order_by('-id')[:5]
         elif teacher:
             courses = Course.objects.filter(teacher=teacher)
         else:
