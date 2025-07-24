@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView
+from django.core.paginator import Paginator
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
 
@@ -277,13 +278,30 @@ class ProfileView(TemplateView):
 @add_group_name_to_context
 class CoursesView(TemplateView):
     template_name = 'courses.html'
+    paginate_by = 9
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Obtener el parámetro de filtro de la URL
+        status_filter = self.request.GET.get('status', 'all')
+
+        # Obtener todos los cursos ordenados por ID descendente
         courses = Course.objects.all().order_by('-id')
+
+        # Aplicar filtro por estado si no es 'all'
+        if status_filter != 'all':
+            courses = courses.filter(status=status_filter)
+
+        # Paginación
+        paginator = Paginator(courses, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         student = self.request.user if self.request.user.is_authenticated else None
 
-        for item in courses:
+        # Para cada curso en la página actual, verificar si el estudiante está inscrito y contar inscritos
+        for item in page_obj:
             if student:
                 registration = Registration.objects.filter(
                     course=item, student=student).first()
@@ -293,8 +311,14 @@ class CoursesView(TemplateView):
 
             enrollment_count = Registration.objects.filter(course=item).count()
             item.enrollment_count = enrollment_count
+        context.update({
+            'courses': page_obj,
+            'status_filter': status_filter,
+            'is_paginated': page_obj.has_other_pages(),
+            'page_obj': page_obj,  # Para la paginación en la plantilla
+            'student': student,
+        })
 
-        context['courses'] = courses
         return context
 
 # PAGINA DE ERROR DE ACCESO A PAGINA NO PERMITIDA
@@ -394,9 +418,27 @@ class CourseEnrollmentView(TemplateView):
         if request.user.is_authenticated and request.user.groups.first().name == 'estudiantes':
             student = request.user
 
+            # Verificar si el estudiante ya está inscrito
+            if Registration.objects.filter(course=course, student=student).exists():
+                messages.info(request, 'Ya estás inscrito en este curso.')
+                return redirect('courses')
+
+            enrollment_count = Registration.objects.filter(
+                course=course).count()
+            if course.status != 'I' or enrollment_count >= course.capacity:
+                messages.error(
+                    request, 'No se puede inscribir, el curso está lleno.')
+                return redirect('courses')
+
             # Crear un registro de inscripción asociado al estudiante y el curso
             registration = Registration(course=course, student=student)
             registration.save()
+
+            # Actualizar el estado del curso si se alcanza la capacidad
+            enrollment_count += 1
+            if enrollment_count >= course.capacity:
+                course.status = 'P'
+                course.save()
 
             messages.success(request, 'Inscripción exitosa')
         else:

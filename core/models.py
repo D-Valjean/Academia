@@ -21,6 +21,12 @@ class Course(models.Model):
         default=0, verbose_name='Cantidad de clases')
     status = models.CharField(
         max_length=1, choices=STATUS_CHOICES, default='I', verbose_name='Estado')
+    capacity = models.PositiveIntegerField(
+        default=0, verbose_name='Capacidad', help_text='Cantidad de alumnos que pueden inscribirse en el curso')
+    start_date = models.DateField(
+        verbose_name='Fecha de inicio', blank=True, null=True)
+    end_date = models.DateField(
+        verbose_name='Fecha de finalización', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -36,7 +42,7 @@ class Registration(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, verbose_name='Curso')
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students_registration', limit_choices_to={
-                                'groups__name': 'estudiantes'}, verbose_name='Estudiante')
+        'groups__name': 'estudiantes'}, verbose_name='Estudiante')
     enabled = models.BooleanField(default=True, verbose_name='Alumno Regular')
 
     def __str__(self):
