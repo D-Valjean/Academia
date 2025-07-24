@@ -5,7 +5,7 @@ from django.views.generic import ListView, TemplateView, CreateView, UpdateView,
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, CourseForm, UserCreationForm
 from django.views import View
-from .models import Course, Registration, Mark, Attendance
+from .models import Course, Registration, Mark, Attendance, Notifications
 from django.contrib.auth.models import User
 from accounts.models import Profile
 from django.urls import reverse_lazy
@@ -117,6 +117,8 @@ class HomeView(TemplateView):
         if student:
             registrations = Registration.objects.filter(student=student)
             courses = [registration.course for registration in registrations]
+            notification = Notifications.objects.filter(
+                user=student,).order_by('-id')
         elif teacher:
             courses = Course.objects.filter(teacher=teacher)
         else:
@@ -127,7 +129,10 @@ class HomeView(TemplateView):
             enrollment_count = Registration.objects.filter(course=item).count()
             item.enrollment_count = enrollment_count
 
-        context['courses'] = courses
+        context.update({
+            'courses': courses,
+            'notification': notification,
+        })
         return context
 # PAGINA DE PRECIOS
 
@@ -433,7 +438,9 @@ class CourseEnrollmentView(TemplateView):
             # Crear un registro de inscripción asociado al estudiante y el curso
             registration = Registration(course=course, student=student)
             registration.save()
-
+            notification = Notifications(
+                user=student, message=f'Te has inscrito en el curso: {course.name}', status='I')
+            notification.save()
             # Actualizar el estado del curso si se alcanza la capacidad
             enrollment_count += 1
             if enrollment_count >= course.capacity:
@@ -488,6 +495,11 @@ class UpdateMarkView(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        Notifications.objects.create(
+            user=self.object.student,
+            message=f'Tus notas han sido actualizadas en el curso: {self.object.course.name}, {self.object.marks},',
+            status='N'
+        )
         return redirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

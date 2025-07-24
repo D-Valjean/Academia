@@ -104,6 +104,19 @@ class Mark(models.Model):
     average = models.DecimalField(
         max_digits=3, decimal_places=1, null=True, blank=True, verbose_name='Promedio')
 
+    @property
+    def marks(self):
+        mark = []
+        if self.mark_1 is not None:
+            mark.append(f'Primera Evaluación: {self.mark_1}')
+        if self.mark_2 is not None:
+            mark.append(f'Segunda Evaluación: { self.mark_2}')
+        if self.mark_3 is not None:
+            average = int(self.average)
+            mark.append(
+                f'Tercera Evaluación: {self.mark_3}, Con promedio: {average:.1f}')
+        return mark
+
     def __str__(self):
         return str(self.course)
 
@@ -139,6 +152,8 @@ class Notifications(models.Model):
         ('F', 'Finalizado'),
         ('N', 'Nota'),
     )
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, verbose_name='Estado', default='N')
 
     class Meta:
         verbose_name = 'Notificación'

@@ -95,7 +95,7 @@
                                                     </span>
                                                 {% elif course.status == 'P' %}
                                                     <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3">
-                                                        <i class="fas fa-sync-alt me-1"></i> En Progreso
+                                                        <i class="fas fa-sync-alt me-1"></i> Cursando
                                                     </span>
                                                 {% else %}
                                                     <span class="badge bg-danger position-absolute top-0 end-0 mt-3 me-3">
@@ -114,9 +114,9 @@
                                                 </div>
                                                 <div class="d-grid">
                                                     {% if group_name == 'estudiantes' and course.is_enrolled and not course.status == 'F' %}
-                                                        <button class="btn btn-sm btn-warning">
+                                                        <span class="btn btn-sm btn-warning">
                                                             <i class="fas fa-user-check me-1"></i> Inscripto
-                                                        </button>
+                                                        </span>
                                                     {% elif group_name == 'profesores' %}
                                                     {% else %}
                                                         <button class="btn btn-sm btn-outline-secondary" disabled>
@@ -150,23 +150,25 @@
                                     <tr>
                                         <th>Usuario</th>
                                         <th>Acción</th>
-                                        <th>Curso</th>
+                                        {% comment %} <th>Curso</th> {% endcomment %}
                                         <th>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="https://ui-avatars.com/api/?name=Laura+Diaz&background=random" class="rounded-circle me-2" width="36" height="36">
-                                                <span>Laura Díaz</span>
-                                            </div>
-                                        </td>
-                                        <td>Inscripción completada</td>
-                                        <td>Programación Web</td>
-                                        <td>Hace 2 horas</td>
-                                    </tr>
-                                    <tr>
+                                    {% for n in notification %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name={{n.status}}&background=random" class="rounded-circle me-2" width="36" height="36">
+                                                    {% comment %} <span>{{n.status}}</span> {% endcomment %}
+                                                </div>
+                                            </td>
+                                            <td>{{n.message}}</td>
+                                            {% comment %} <td>Programación Web</td> {% endcomment %}
+                                            <td>Hace 2 horas</td>
+                                        </tr>
+                                    {% endfor %}
+                                    {% comment %} <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <img src="https://ui-avatars.com/api/?name=Pedro+Gomez&background=random" class="rounded-circle me-2" width="36" height="36">
@@ -198,7 +200,7 @@
                                         <td>Nuevo curso creado</td>
                                         <td>Data Science</td>
                                         <td>20 Jul 2023</td>
-                                    </tr>
+                                    </tr> {% endcomment %}
                                 </tbody>
                             </table>
                         </div>
