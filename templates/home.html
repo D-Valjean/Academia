@@ -82,49 +82,54 @@
                     </div>
                     <div class="card-body">
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            {% for course in courses %}
-                                <div class="col">
-                                    <div class="card h-100 border-0 shadow-soft">
-                                        <div class="card-body position-relative">
-                                            {% if course.status == 'I' %}
-                                                <span class="badge bg-success position-absolute top-0 end-0 mt-3 me-3">
-                                                    <i class="fas fa-user-plus me-1"></i> Inscripciones Abiertas
-                                                </span>
-                                            {% elif course.status == 'P' %}
-                                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3">
-                                                    <i class="fas fa-sync-alt me-1"></i> En Progreso
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-danger position-absolute top-0 end-0 mt-3 me-3">
-                                                    <i class="fas fa-flag-checkered me-1"></i> Finalizado
-                                                </span>
-                                            {% endif %}
-                                            <h5 class="card-title mb-3">{{course.name}}</h5>
-                                            <p class="card-text text-muted small mb-3">{{course.description}}</p>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <img src="https://ui-avatars.com/api/?name={{course.teacher.first_name}}+{{course.teacher.last_name}}&background=0D8ABC&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                                <span class="small">Prof. {{course.teacher.first_name}} {{course.teacher.last_name}}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between small text-muted mb-3">
-                                                <span><i class="fas fa-clock me-1"></i> {{course.class_quantity}} clases</span>
-                                                <span><i class="fas fa-user-graduate me-1"></i> {{course.enrollment_count}} inscritos</span>
-                                            </div>
-                                            <div class="d-grid">
-                                                {% if group_name == 'estudiantes' and course.is_enrolled and not course.status == 'F' %}
-                                                    <button class="btn btn-sm btn-warning">
-                                                        <i class="fas fa-user-check me-1"></i> Inscripto
-                                                    </button>
-                                                {% elif group_name == 'profesores' %}
+                            {% if not courses %}
+                                <p>No te has inscrito a ningun curso.</p>
+                            {% else %}
+                                {% for course in courses %}
+                                    <div class="col">
+                                        <div class="card h-100 border-0 shadow-soft">
+                                            <div class="card-body position-relative">
+                                                {% if course.status == 'I' %}
+                                                    <span class="badge bg-success position-absolute top-0 end-0 mt-3 me-3">
+                                                        <i class="fas fa-user-plus me-1"></i> Inscripciones Abiertas
+                                                    </span>
+                                                {% elif course.status == 'P' %}
+                                                    <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3">
+                                                        <i class="fas fa-sync-alt me-1"></i> En Progreso
+                                                    </span>
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-secondary" disabled>
-                                                        <i class="fas fa-lock me-1"></i> Curso finalizado
-                                                    </button>
+                                                    <span class="badge bg-danger position-absolute top-0 end-0 mt-3 me-3">
+                                                        <i class="fas fa-flag-checkered me-1"></i> Finalizado
+                                                    </span>
                                                 {% endif %}
+                                                <h5 class="card-title mb-3">{{course.name}}</h5>
+                                                <p class="card-text text-muted small mb-3">{{course.description}}</p>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <img src="https://ui-avatars.com/api/?name={{course.teacher.first_name}}+{{course.teacher.last_name}}&background=0D8ABC&color=fff" class="rounded-circle me-2" width="32" height="32">
+                                                    <span class="small">Prof. {{course.teacher.first_name}} {{course.teacher.last_name}}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between small text-muted mb-3">
+                                                    <span><i class="fas fa-clock me-1"></i> {{course.class_quantity}} clases</span>
+                                                    <span><i class="fas fa-user-graduate me-1"></i> {{course.enrollment_count}} inscritos</span>
+                                                </div>
+                                                <div class="d-grid">
+                                                    {% if group_name == 'estudiantes' and course.is_enrolled and not course.status == 'F' %}
+                                                        <button class="btn btn-sm btn-warning">
+                                                            <i class="fas fa-user-check me-1"></i> Inscripto
+                                                        </button>
+                                                    {% elif group_name == 'profesores' %}
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                            <i class="fas fa-lock me-1"></i> Curso finalizado
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>
@@ -200,71 +205,72 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Top Students -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Estudiantes Destacados</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <div class="position-relative me-3">
-                                        <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=random" class="rounded-circle" width="48" height="48">
-                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+            {% if not group_name == 'estudiantes' %}
+                <!-- Top Students -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Estudiantes Destacados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=random" class="rounded-circle" width="48" height="48">
+                                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Juan Pérez</h6>
+                                            <small class="text-muted">Programación Web - Promedio: 9.2</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">1°</span>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Juan Pérez</h6>
-                                        <small class="text-muted">Programación Web - Promedio: 9.2</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Maria+Lopez&background=random" class="rounded-circle" width="48" height="48">
+                                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">María López</h6>
+                                            <small class="text-muted">Diseño UX/UI - Promedio: 8.9</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">2°</span>
                                     </div>
-                                    <span class="badge bg-primary rounded-pill">1°</span>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <div class="position-relative me-3">
-                                        <img src="https://ui-avatars.com/api/?name=Maria+Lopez&background=random" class="rounded-circle" width="48" height="48">
-                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Carlos+Garcia&background=random" class="rounded-circle" width="48" height="48">
+                                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Carlos García</h6>
+                                            <small class="text-muted">Marketing Digital - Promedio: 8.7</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">3°</span>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">María López</h6>
-                                        <small class="text-muted">Diseño UX/UI - Promedio: 8.9</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Laura+Martinez&background=random" class="rounded-circle" width="48" height="48">
+                                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Laura Martínez</h6>
+                                            <small class="text-muted">Programación Web - Promedio: 8.5</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">4°</span>
                                     </div>
-                                    <span class="badge bg-primary rounded-pill">2°</span>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <div class="position-relative me-3">
-                                        <img src="https://ui-avatars.com/api/?name=Carlos+Garcia&background=random" class="rounded-circle" width="48" height="48">
-                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Carlos García</h6>
-                                        <small class="text-muted">Marketing Digital - Promedio: 8.7</small>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">3°</span>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <div class="position-relative me-3">
-                                        <img src="https://ui-avatars.com/api/?name=Laura+Martinez&background=random" class="rounded-circle" width="48" height="48">
-                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Laura Martínez</h6>
-                                        <small class="text-muted">Programación Web - Promedio: 8.5</small>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">4°</span>
-                                </div>
-                            </a>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 
