@@ -17,7 +17,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
-
+import pyjokes
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
 
 
@@ -88,13 +88,16 @@ def add_group_name_to_context(view_class):
                                 estudiantes += 1
         except:
             estudiantes = 0
+        joke = pyjokes.get_joke(language='es', category='all')
+        print(joke)
         context = {
             'group_name': group_name,
             'group_name_singular': group_name_singular,
             'color': color,
             'total_courses': Course.objects.exclude(status='F').count(),
             'profesores': profesores,
-            'estudiantes': estudiantes
+            'estudiantes': estudiantes,
+            'dad_joke': f"Ahora un chiste: \n{joke}",
         }
 
         self.extra_context = context

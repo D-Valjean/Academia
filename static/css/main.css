@@ -17,7 +17,7 @@ body {
     font-family: var(--font-main);
     background-color: var(--bg-light);
     color: #333;
-    padding-top: 80px;
+    /* padding-top: 80px; */
 }
 
 /* HEADER */
