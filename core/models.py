@@ -155,6 +155,7 @@ class Notifications(models.Model):
         ('P', 'Progreso'),
         ('F', 'Finalizado'),
         ('N', 'Nota'),
+        ('A', 'Asignacion'),
     )
     status = models.CharField(
         max_length=1, choices=STATUS_CHOICES, verbose_name='Estado', default='N')

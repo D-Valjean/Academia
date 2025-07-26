@@ -88,7 +88,7 @@ def add_group_name_to_context(view_class):
                                 estudiantes += 1
         except:
             estudiantes = 0
-        joke = pyjokes.get_joke(language='es', category='all')
+        joke = pyjokes.get_joke(language='es', category='neutral')
         print(joke)
         context = {
             'group_name': group_name,
@@ -126,6 +126,23 @@ class HomeView(TemplateView):
                 user=student,).order_by('-id')[:5]
         elif teacher:
             courses = Course.objects.filter(teacher=teacher)
+            students = []
+            notification = Notifications.objects.filter(
+                user=teacher,).order_by('-id')[:5]
+            for course in courses:
+                registrations = Registration.objects.filter(course=course)
+                mark = Mark.objects.filter(course=course)
+                for registration in registrations:
+                    for mark_item in mark:
+                        if registration.student == mark_item.student:
+                            students.append({
+                                'student_name': registration.student.get_full_name(),
+                                'student_average': mark_item.average if mark_item.average else 0,
+                                'couse_name': course.name,
+                            })
+            students = sorted(
+                students, key=lambda x: x['student_average'], reverse=True)
+            # students = list(set(students))  # Eliminar duplicados
         for item in courses:
             item.is_enrolled = True
             enrollment_count = Registration.objects.filter(course=item).count()
@@ -134,6 +151,7 @@ class HomeView(TemplateView):
         context.update({
             'courses': courses,
             'notification': notification,
+            'students': students if teacher else None,
         })
         return context
 # PAGINA DE PRECIOS
@@ -348,7 +366,7 @@ class ErrorView(TemplateView):
 class CourseCreateView(UserPassesTestMixin, CreateView):
     model = Course
     form_class = CourseForm
-    template_name = 'create_course.html'
+    template_name = 'cursos/create_course.html'
     success_url = reverse_lazy('courses')
 
     def test_func(self):
@@ -360,6 +378,12 @@ class CourseCreateView(UserPassesTestMixin, CreateView):
     def form_valid(self, form):
         messages.success(
             self.request, 'El registro se ha guardado correctamente')
+        notication = Notifications(
+            user=form.instance.teacher,
+            message=f'Se le ha asignado el curso: {form.instance.name}',
+            status='A'
+        )
+        notication.save()
         return super().form_valid(form)
 
     def form_invalid(self, form):

@@ -82,20 +82,21 @@
                 </div>
                 <div class="card-body">
                     <div class="list-group list-group-flush">
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex align-items-center">
-                                <div class="position-relative me-3">
-                                    <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=random" class="rounded-circle" width="48" height="48">
-                                    <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                        {% for student in students%}
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3">
+                                        <img src="https://ui-avatars.com/api/?name={{student.student_name}}&background=random" class="rounded-circle" width="48" height="48">
+                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{student.student_name}} <span class="badge bg-primary rounded-pill">{{ forloop.counter0|add:1}}°</span></h6>
+                                        <small class="text-muted">{{student.couse_name}} - Promedio: {{student.student_average}}</small>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Juan Pérez</h6>
-                                    <small class="text-muted">Programación Web - Promedio: 9.2</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill">1°</span>
-                            </div>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
+                            </a>
+                        {% endfor %}
+                        {% comment %} <a href="#" class="list-group-item list-group-item-action">
                             <div class="d-flex align-items-center">
                                 <div class="position-relative me-3">
                                     <img src="https://ui-avatars.com/api/?name=Maria+Lopez&background=random" class="rounded-circle" width="48" height="48">
@@ -133,7 +134,7 @@
                                 </div>
                                 <span class="badge bg-primary rounded-pill">4°</span>
                             </div>
-                        </a>
+                        </a> {% endcomment %}
                     </div>
                 </div>
             </div>
