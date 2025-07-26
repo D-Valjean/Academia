@@ -108,14 +108,19 @@
                                 </button>
                             </li>
                         </ul>
-                        
                         <!-- Contenido de las pestañas -->
                         <div class="tab-content" id="profileTabsContent">
                             <!-- Dashboard -->
                             <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
-                                {% comment %} Contenido específico del rol {% endcomment %}
+                                <div id="loadingIndicator" class="text-center py-5 d-none">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                </div>
                                 {% if group_name == 'estudiantes' %}
-                                    {% include 'profile/students.html' %}
+                                    <div id="studentContent">
+                                        {% include 'profile/students.html' %}
+                                    </div>
                                 {% elif group_name == 'profesores' %}
                                     {% include 'profile/profesores.html' %}
                                 {% elif group_name == 'director' %}
@@ -191,8 +196,8 @@
     </div>
     
     <!-- Modal de edición de perfil -->
-    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow-soft">
                 <div class="modal-header bg-light">
                     <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
@@ -286,6 +291,47 @@
                     }
                 });
             }
+            const profileCard = document.querySelector('.card.border-0.shadow-soft');
+            const editButton = document.querySelector('[data-bs-target="#editProfileModal"]');
+            
+            if (profileCard && editButton) {
+                profileCard.addEventListener('mouseenter', function() {
+                    this.style.zIndex = '999';
+                });
+                
+                profileCard.addEventListener('mouseleave', function() {
+                    this.style.zIndex = '';
+                });
+            }
+
+            // Asegura que el modal mantenga su posición
+            const modal = document.getElementById('editProfileModal');
+            if (modal) {
+                modal.addEventListener('show.bs.modal', function() {
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.paddingRight = '0';
+                });
+                
+                modal.addEventListener('hidden.bs.modal', function() {
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                });
+            }
         });
+        const dashboardTab = document.getElementById('dashboard-tab');
+        const studentContent = document.getElementById('studentContent');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        if (dashboardTab && studentContent) {
+            dashboardTab.addEventListener('click', function() {
+                loadingIndicator.classList.remove('d-none');
+                studentContent.classList.add('d-none');
+                
+                setTimeout(() => {
+                    loadingIndicator.classList.add('d-none');
+                    studentContent.classList.remove('d-none');
+                }, 300);
+            });
+        };
     </script>
 {% endblock  %}

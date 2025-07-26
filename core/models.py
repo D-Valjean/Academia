@@ -103,6 +103,8 @@ class Mark(models.Model):
         null=True, blank=True, verbose_name='Nota 3')
     average = models.DecimalField(
         max_digits=3, decimal_places=1, null=True, blank=True, verbose_name='Promedio')
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='Fecha de creación', blank=True, null=True)
 
     @property
     def marks(self):
@@ -110,9 +112,11 @@ class Mark(models.Model):
         if self.mark_1 is not None:
             mark.append(f'Primera Evaluación: {self.mark_1}')
         if self.mark_2 is not None:
+            mark.pop() if mark else None
             mark.append(f'Segunda Evaluación: { self.mark_2}')
         if self.mark_3 is not None:
             average = int(self.average)
+            mark.pop() if mark else None
             mark.append(
                 f'Tercera Evaluación: {self.mark_3}, Con promedio: {average:.1f}')
         return mark

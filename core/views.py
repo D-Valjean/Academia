@@ -109,7 +109,7 @@ def add_group_name_to_context(view_class):
 
 @add_group_name_to_context
 class HomeView(TemplateView):
-    template_name = 'home.html'
+    template_name = 'front/home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,6 +117,8 @@ class HomeView(TemplateView):
         ).name == 'estudiantes' else None
         teacher = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
         ).name == 'profesores' else None
+        courses = []
+        notification = []
         if student:
             registrations = Registration.objects.filter(student=student)
             courses = [registration.course for registration in registrations]
@@ -124,9 +126,6 @@ class HomeView(TemplateView):
                 user=student,).order_by('-id')[:5]
         elif teacher:
             courses = Course.objects.filter(teacher=teacher)
-        else:
-            courses = []
-
         for item in courses:
             item.is_enrolled = True
             enrollment_count = Registration.objects.filter(course=item).count()
@@ -285,7 +284,7 @@ class ProfileView(TemplateView):
 
 @add_group_name_to_context
 class CoursesView(TemplateView):
-    template_name = 'courses.html'
+    template_name = 'cursos/courses.html'
     paginate_by = 9
 
     def get_context_data(self, **kwargs):

@@ -139,7 +139,12 @@ body {
 .page-header {
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+    /* border-bottom: 2px solid rgba(0, 0, 0, 0.08); */
+}
+
+.container.py-4 {
+    position: relative;
+    z-index: 1;
 }
 
 /* MODALS */
@@ -147,6 +152,24 @@ body {
     border-radius: var(--border-radius);
     border: none;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal {
+    z-index: 9999 !important;
+}
+
+/* Corrige el contexto en el contenido de estudiantes */
+#studentContent {
+    position: relative;
+    z-index: 0;
+}
+
+/* Previene problemas con elementos posicionados */
+.card,
+.list-group-item,
+.tab-content>.tab-pane {
+    position: static !important;
+    transform: none !important;
 }
 
 /* UTILITY CLASSES */

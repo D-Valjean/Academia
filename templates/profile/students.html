@@ -1,100 +1,250 @@
-<h5>CURSOS EN LOS QUE ESTA INSCRIPTO</h5>
-<div class="accordion" id="accordionEvolution">
+<style>
+	/* Agrega estas reglas a tu archivo CSS principal */
+	.modal-static-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		z-index: 1040;
+		opacity: 0;
+		transition: opacity 0.15s linear;
+		pointer-events: none;
+	}
+
+	.modal-static-backdrop.show {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.modal-static {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 1050;
+		width: 80%;
+		max-width: 800px;
+		opacity: 0;
+		transition: opacity 0.15s linear;
+		pointer-events: none;
+	}
+
+	.modal-static.show {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.modal-static-content {
+		background-color: #fff;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+		overflow: hidden;
+	}
+
+	.modal-static-header {
+		padding: 15px 20px;
+		background: linear-gradient(135deg, #3a86ff, #8338ec);
+		color: white;
+	}
+
+	.modal-static-body {
+		padding: 25px;
+		max-height: 70vh;
+		overflow-y: auto;
+	}
+
+	.modal-static-footer {
+		padding: 15px 20px;
+		background-color: #f8f9fa;
+		border-top: 1px solid #dee2e6;
+	}
+
+	/* Deshabilitar todas las transformaciones y transiciones */
+	.modal-static * {
+		transform: none !important;
+		transition: none !important;
+		will-change: auto !important;
+	}
+
+	/* Estilos específicos para contenido dentro del modal */
+	.course-header {
+		margin-bottom: 20px;
+	}
+
+	.stats-card {
+		background: white;
+		border-radius: 12px;
+		padding: 15px;
+		margin-top: 20px;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+		display: flex;
+		justify-content: space-around;
+	}
+
+	.stat-item {
+		text-align: center;
+		padding: 10px;
+	}
+
+	.stat-value {
+		font-size: 1.5rem;
+		font-weight: bold;
+	}
+
+	.stat-label {
+		font-size: 0.9rem;
+		color: #6c757d;
+	}
+
+	.present {
+		color: #06d6a0;
+	}
+
+	.absent {
+		color: #ef476f;
+	}
+
+	.table-container {
+		margin-bottom: 25px;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+	}
+
+	.table-header {
+		padding: 12px 15px;
+		background-color: #f8f9fa;
+		border-bottom: 1px solid #dee2e6;
+		font-weight: 600;
+	}
+
+	.table-stable {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.table-stable th,
+	.table-stable td {
+		padding: 12px 15px;
+		text-align: left;
+	}
+
+	.table-stable th {
+		background-color: #3a86ff;
+		color: white;
+		font-weight: 600;
+	}
+
+	.table-stable tr:nth-child(even) {
+		background-color: rgba(58, 134, 255, 0.05);
+	}
+
+	.table-stable tr.table-dark {
+		background-color: #343a40;
+		color: white;
+	}
+</style>
+<div class="student-content-wrapper" style="position: relative; z-index: auto;">
+	<h5>CURSOS EN LOS QUE ESTA INSCRIPTO</h5>
+	<div class="accordion" id="accordionEvolution">
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingOne">
+				<button class="accordion-button collapsed bg-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+					CURSOS EN PROGRESO
+				</button>
+			</h2>
+			<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionEvolution">
+				<div class="accordion-body">
+					{% if progress_courses %}
+						<ul class="list-group">
+							{% for course in progress_courses %}
+								<li class="list-group-item list-group-item-warning">
+									{{ course.name }}
+									<button type="button" class="btn btn-sm btn-warning float-end" data-bs-toggle="modal" data-bs-target="#modalEvolution" onclick="showEvolutionModal(this)" data-course-id="{{ course.id }}" data-student-id="{{ student_id }}">
+										{% if course.status == 'P' %}
+											Consultar Progreso
+										{% endif %}
+									</button>
+								</li>
+							{% endfor %}
+						</ul>
+					{% else %}
+						<div class="alert alert-warning" role="alert">
+							No hay cursos en progreso en los que se haya inscripto
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
 	<div class="accordion-item">
-		<h2 class="accordion-header" id="headingOne">
-			<button class="accordion-button collapsed bg-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-				CURSOS EN PROGRESO
+		<h2 class="accordion-header" id="headingTwo">
+			<button class="accordion-button collapsed bg-success text-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+				CURSOS EN ETAPA DE INSCRIPCION
 			</button>
 		</h2>
-		<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionEvolution">
+		<div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionEvolution">
 			<div class="accordion-body">
-				{% if progress_courses %}
+				{% if inscription_courses %}
 					<ul class="list-group">
-						{% for course in progress_courses %}
-							<li class="list-group-item list-group-item-warning">
+						{% for course in inscription_courses %}
+							<li class="list-group-item list-group-item-success">
 								{{ course.name }}
-								<button type="button" class="btn btn-sm btn-warning float-end" data-bs-toggle="modal" data-bs-target="#modalEvolution" onclick="showEvolutionModal(this)" data-course-id="{{ course.id }}" data-student-id="{{ student_id }}">
-									{% if course.status == 'P' %}
-										Consultar Evolución
-									{% endif %}
-								</button>
 							</li>
 						{% endfor %}
 					</ul>
 				{% else %}
-					<div class="alert alert-warning" role="alert">
-						No hay cursos en progreso en los que se haya inscripto
+					<div class="alert alert-success" role="alert">
+						No hay cursos disponibles
 					</div>
 				{% endif %}
 			</div>
 		</div>
 	</div>
-<div class="accordion-item">
-	<h2 class="accordion-header" id="headingTwo">
-		<button class="accordion-button collapsed bg-success text-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-			CURSOS EN ETAPA DE INSCRIPCION
+	<div class="accordion-item">
+	<h2 class="accordion-header" id="headingThree">
+		<button class="accordion-button collapsed bg-danger text-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+			CURSOS FINALIZADOS
 		</button>
 	</h2>
-	<div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionEvolution">
+	<div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionEvolution">
 		<div class="accordion-body">
-			{% if inscription_courses %}
+			{% if finalized_courses %}
 				<ul class="list-group">
-					{% for course in inscription_courses %}
-						<li class="list-group-item list-group-item-success">
+					{% for course in finalized_courses %}
+						<li class="list-group-item list-group-item-danger">
 							{{ course.name }}
+							<button type="button" class="btn btn-sm btn-danger float-end" data-bs-toggle="modal" data-bs-target="#modalEvolution" onclick="showEvolutionModal(this)" data-course-id="{{ course.id }}" data-student-id="{{ student_id }}">
+								{% if course.status == 'F' %}
+									Consultar Evolución
+								{% endif %}
+							</button>
 						</li>
 					{% endfor %}
 				</ul>
 			{% else %}
-				<div class="alert alert-success" role="alert">
-					No hay cursos para listar en los que se haya inscripto
+				<div class="alert alert-danger" role="alert">
+					Sin cursos finalizados
 				</div>
 			{% endif %}
 		</div>
 	</div>
-</div>
-<div class="accordion-item">
-<h2 class="accordion-header" id="headingThree">
-	<button class="accordion-button collapsed bg-danger text-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-		CURSOS FINALIZADOS
-	</button>
-</h2>
-<div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionEvolution">
-	<div class="accordion-body">
-		{% if finalized_courses %}
-			<ul class="list-group">
-				{% for course in finalized_courses %}
-					<li class="list-group-item list-group-item-danger">
-						{{ course.name }}
-						<button type="button" class="btn btn-sm btn-danger float-end" data-bs-toggle="modal" data-bs-target="#modalEvolution" onclick="showEvolutionModal(this)" data-course-id="{{ course.id }}" data-student-id="{{ student_id }}">
-							{% if course.status == 'F' %}
-								Consultar Evolución
-							{% endif %}
-						</button>
-					</li>
-				{% endfor %}
-			</ul>
-		{% else %}
-			<div class="alert alert-danger" role="alert">
-				No hay cursos finalizados para listar en los que se haya inscripto
-			</div>
-		{% endif %}
 	</div>
-</div>
-</div>
-</div>
+	</div>
 
-<!-- Modal -->
-<div class="modal fade" id="modalEvolution" tabindex="-1" aria-labelledby="modalEvolutionLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-scrollable">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="modalEvolutionLabel">Consultar Evolución</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	<!-- Modal -->
+	<div class="modal-static-backdrop" id="staticBackdrop"></div>
+	<div class="modal-static" id="staticModal">
+		<div class="modal-static-content">
+			<div class="modal-static-header">
+				<h5 class="modal-title"><i class="fas fa-chart-line me-2"></i> Progreso Académico</h5>
+				<button type="button" class="btn-close btn-close-white" onclick="hideStaticModal()"></button>
 			</div>
-			<div class="modal-body" id="modal-body"></div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+			<div class="modal-static-body" id="staticModalBody">
+			</div>
+			<div class="modal-static-footer">
+				<button type="button" class="btn btn-secondary" onclick="hideStaticModal()">Cerrar</button>
 			</div>
 		</div>
 	</div>
@@ -102,90 +252,156 @@
 <script>
 	async function showEvolutionModal(button) {
 		try {
-			var courseId = button.getAttribute('data-course-id');
-			var studentId = button.getAttribute('data-student-id');
-			var response = await fetch(`/evolution/${courseId}/${studentId}`);
-			var data = await response.json();
-
-			var cardContent = `
-				<h5 class="card-title">
-					<strong>${data.courseName}</strong>
-					<span class="float-end badge bg-${data.registration_status.enabled ? 'success' : 'danger'}">
-						${data.registration_status.enabled ? 'REGULAR' : 'IRREGULAR'}
-					</span>
-				</h5>
-				<h6>Profesor: ${data.teacher}</h6>
-				<h6 class="text-center">
-					<span class="badge bg-${data.courseStatus === 'P' ? 'warning text-dark' : data.courseStatus === 'I' ? 'success' : data.courseStatus === 'F' ? 'danger' : ''}">
-						${data.courseStatus === 'P' ? 'CURSO EN PROGRESO' : data.courseStatus === 'I' ? 'EN ETAPA DE INSCRIPCION' : data.courseStatus === 'F' ? 'CURSO FINALIZADO' : ''}
-					</span>
-				</h6>
-				</h6>
-				<hr>
-				<h6 class="card-subtitle my-2 text-muted">Notas:</h6>
-				<table class="table table-success table-striped">
-					<thead>
-						<tr>
-							<th scope="col"></th>
-							<th class="text-center" scope="col">Nota</th>
-						</tr>
-					</thead>
-					<tbody>
-					${data.marks.map(mark => `
-						<tr>
-							<th scope="row">Evaluación 1</th>
-							<td class="text-center">${mark.mark_1 === null ? '-' : mark.mark_1}</td>
-						</tr>
-						<tr>
-							<th scope="row">Evaluación 2</th>
-							<td class="text-center">${mark.mark_2 === null ? '-' : mark.mark_2}</td>
-						</tr>
-						<tr>
-							<th scope="row">Evaluación 3</th>
-							<td class="text-center">${mark.mark_3 === null ? '-' : mark.mark_3}</td>
-						</tr>
-						<tr class="table-dark">
-							<th scope="row">Promedio</th>
-							<td class="text-center">${mark.average === null ? '-' : mark.average}</td>
-						</tr>
-					`).join('')}
-					</tbody>
-				</table>
-				<h6 class="card-subtitle my-2 text-muted">Asistencias:</h6>
-				<table class="table table-success table-striped">
-					<thead>
-						<tr>
-							<th scope="col">Fecha</th>
-							<th class="text-center" scope="col">Asistencia</th>
-						</tr>
-					</thead>
-					<tbody>
-						${data.attendances.map(attendance => `
-							<tr>
-								<th scope="row">${attendance.date}</th>
-								<td class="text-center text-${attendance.present ? 'success' : 'danger'}" style="font-weight:bold;">
-									${attendance.present ? '✔' : '✗'}
-								</td>
-							</tr>
-						`).join('')}
-						<tr class="table-dark">
-							<th scope="row" colspan="2">
-								Total de Clases: ${data.classQuantity}
-								- Asistencias: ${data.attendances.filter(attendance => attendance.present).length}
-								- Ausencias: ${data.attendances.filter(attendance => !attendance.present).length}
-							</th>
-						</tr>
-					</tbody>
-				</table>
+			// Obtener IDs del curso y estudiante
+			const courseId = button.getAttribute('data-course-id');
+			const studentId = button.getAttribute('data-student-id');
+			
+			// Mostrar el backdrop inmediatamente
+			const backdrop = document.getElementById('staticBackdrop');
+			backdrop.classList.add('show');
+			
+			// Mostrar esqueleto del modal mientras se cargan los datos
+			const modalBody = document.getElementById('staticModalBody');
+			modalBody.innerHTML = `
+				<div class="text-center py-5">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Cargando...</span>
+					</div>
+					<p class="mt-3">Cargando información del curso...</p>
+				</div>
 			`;
-			var modalBody = document.getElementById('modal-body');
-			modalBody.innerHTML = cardContent;
-			var modal = new bootstrap.Modal(document.getElementById('modalEvolution'));
-			modal.show();
-			document.querySelector('.modal-backdrop').remove();
-		} catch(error) {
+			
+			// Mostrar el modal
+			const modal = document.getElementById('staticModal');
+			modal.classList.add('show');
+			
+			// Obtener datos del servidor
+			const response = await fetch(`/evolution/${courseId}/${studentId}`);
+			const data = await response.json();
+			
+			// Construir contenido del modal
+			const content = `
+				<div class="course-header mb-4">
+					<div class="d-flex justify-content-between align-items-center">
+						<h4 class="mb-0"><strong>${data.courseName}</strong></h4>
+						<span class="badge ${data.registration_status.enabled ? 'bg-success' : 'bg-danger'}">
+							${data.registration_status.enabled ? 'REGULAR' : 'IRREGULAR'}
+						</span>
+					</div>
+					<p class="mb-1"><strong>Profesor:</strong> ${data.teacher}</p>
+					<p class="mb-0">
+						<span class="badge ${data.courseStatus === 'P' ? 'bg-warning text-dark' : data.courseStatus === 'I' ? 'bg-success' : 'bg-danger'}">
+							${data.courseStatus === 'P' ? 'CURSO EN PROGRESO' : data.courseStatus === 'I' ? 'EN ETAPA DE INSCRIPCION' : 'CURSO FINALIZADO'}
+						</span>
+					</p>
+				</div>
+				
+				<hr>
+				
+				<div class="table-container">
+					<div class="table-header">
+						<i class="fas fa-star me-2"></i> Calificaciones
+					</div>
+					<table class="table-stable">
+						<thead>
+							<tr>
+								<th>Evaluación</th>
+								<th class="text-center">Nota</th>
+							</tr>
+						</thead>
+						<tbody>
+							${data.marks.map(mark => `
+								<tr>
+									<th>Evaluación 1</th>
+									<td class="text-center">${mark.mark_1 === null ? '-' : mark.mark_1}</td>
+								</tr>
+								<tr>
+									<th>Evaluación 2</th>
+									<td class="text-center">${mark.mark_2 === null ? '-' : mark.mark_2}</td>
+								</tr>
+								<tr>
+									<th>Evaluación 3</th>
+									<td class="text-center">${mark.mark_3 === null ? '-' : mark.mark_3}</td>
+								</tr>
+								<tr class="table-dark">
+									<th>Promedio</th>
+									<td class="text-center"><strong>${mark.average === null ? '-' : mark.average}</strong></td>
+								</tr>
+							`).join('')}
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="table-container">
+					<div class="table-header">
+						<i class="fas fa-calendar-check me-2"></i> Asistencias
+					</div>
+					<table class="table-stable">
+						<thead>
+							<tr>
+								<th>Fecha</th>
+								<th class="text-center">Asistencia</th>
+							</tr>
+						</thead>
+						<tbody>
+							${data.attendances.map(attendance => `
+								<tr>
+									<th>${attendance.date}</th>
+									<td class="text-center ${attendance.present ? 'present' : 'absent'}" style="font-weight:bold;">
+										${attendance.present ? '✔ Presente' : '✗ Ausente'}
+									</td>
+								</tr>
+							`).join('')}
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="stats-card">
+					<div class="stat-item">
+						<div class="stat-value">${data.classQuantity}</div>
+						<div class="stat-label">Total de Clases</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-value present">${data.attendances.filter(a => a.present).length}</div>
+						<div class="stat-label">Asistencias</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-value absent">${data.attendances.filter(a => !a.present).length}</div>
+						<div class="stat-label">Ausencias</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-value">${Math.round((data.attendances.filter(a => a.present).length / data.classQuantity) * 100)}%</div>
+						<div class="stat-label">Asistencia</div>
+					</div>
+				</div>
+			`;
+			
+			// Actualizar el contenido del modal
+			modalBody.innerHTML = content;
+			
+		} catch (error) {
 			console.error('Error:', error);
+			const modalBody = document.getElementById('staticModalBody');
+			modalBody.innerHTML = `
+				<div class="alert alert-danger">
+					<i class="fas fa-exclamation-triangle me-2"></i>
+					Error al cargar la información del curso. Por favor intente nuevamente.
+				</div>
+			`;
 		}
 	}
-</script>
 
+	// Función para ocultar el modal estático
+	function hideStaticModal() {
+		const backdrop = document.getElementById('staticBackdrop');
+		const modal = document.getElementById('staticModal');
+		
+		backdrop.classList.remove('show');
+		modal.classList.remove('show');
+		
+		// Limpiar contenido después de la animación
+		setTimeout(() => {
+			document.getElementById('staticModalBody').innerHTML = '';
+		}, 150);
+	}
+</script>

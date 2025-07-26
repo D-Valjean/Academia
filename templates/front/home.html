@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container py-4">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h2 mb-0">Panel de Control</h1>
+                    <p class="text-muted mb-0">Bienvenido al sistema de gestión académica</p>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        {% if not group_name == 'estudiantes' %}
+            {% include "front/estadistica.html" %}
+        {% endif %}
+        {% include "front/front_courses.html" %}
+        {% include "front/activity.html" %}
+    </div>
+
+    {% include 'action-buttom.html' %}
+{% endblock %}
