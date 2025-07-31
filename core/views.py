@@ -18,6 +18,8 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 import pyjokes
+from django.utils import timezone
+from datetime import timedelta
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
 
 
@@ -31,6 +33,23 @@ def plural_to_singular(plural):
     }
 
     return plural_singular.get(plural, "error")
+
+
+def time_passed(fecha):
+    ahora = timezone.now()
+    diferencia = ahora - fecha
+    if diferencia < timedelta(minutes=1):
+        return "hace unos segundos"
+    elif diferencia < timedelta(hours=1):
+        minutos = int(diferencia.total_seconds() // 60)
+        return f"hace {minutos} minuto{'s' if minutos != 1 else ''}"
+    elif diferencia < timedelta(days=1):
+        horas = int(diferencia.total_seconds() // 3600)
+        return f"hace {horas} hora{'s' if horas != 1 else ''}"
+    else:
+        dias = diferencia.days
+        return f"hace {dias} día{'s' if dias != 1 else ''}"
+
 
 # OBTENER COLOR Y GRUPO DE UN USUARIO
 
@@ -124,6 +143,7 @@ class HomeView(TemplateView):
             courses = [registration.course for registration in registrations]
             notification = Notifications.objects.filter(
                 user=student,).order_by('-id')[:5]
+
         elif teacher:
             courses = Course.objects.filter(teacher=teacher)
             students = []
@@ -147,6 +167,8 @@ class HomeView(TemplateView):
             item.is_enrolled = True
             enrollment_count = Registration.objects.filter(course=item).count()
             item.enrollment_count = enrollment_count
+        for n in notification:
+            n.time_passed = time_passed(n.created_at)
 
         context.update({
             'courses': courses,
