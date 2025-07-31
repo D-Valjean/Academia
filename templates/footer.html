@@ -13,7 +13,7 @@
                     <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
-            
+
             <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                 <h5 class="mb-4">Enlaces Rápidos</h5>
                 <ul class="list-unstyled">
@@ -24,7 +24,7 @@
                     <li><a href="#" class="text-white text-decoration-none">Calendario</a></li>
                 </ul>
             </div>
-            
+
             <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                 <h5 class="mb-4">Recursos</h5>
                 <ul class="list-unstyled">
@@ -34,7 +34,7 @@
                     <li><a href="#" class="text-white text-decoration-none">FAQs</a></li>
                 </ul>
             </div>
-            
+
             <div class="col-lg-4 col-md-4">
                 <h5 class="mb-4">Contacto</h5>
                 <ul class="list-unstyled text-white">
@@ -53,12 +53,12 @@
                 </ul>
             </div>
         </div>
-        
+
         <hr class="my-5 bg-light">
-        
+
         <div class="row">
             <div class="col-md-6 text-center text-md-start">
-                <p class="mb-md-0 text-white">&copy; 2023 ACADEMIA. Todos los derechos reservados.</p>
+                <p class="mb-md-0 text-white"><span style="color:white">&copy; <span class="current-year" style="color:white"></span>  ACADEMIA. Todos los derechos reservados.</p>
             </div>
             <div class="col-md-6 text-center text-md-end">
                 <p class="mb-0 text-white">
@@ -69,3 +69,7 @@
         </div>
     </div>
 </footer>
+<script>
+    // Auto-update copyright year
+    document.querySelector('.current-year').textContent = new Date().getFullYear();
+</script>

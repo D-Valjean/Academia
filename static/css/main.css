@@ -13,14 +13,25 @@
     --border-radius: 12px;
 }
 
+html,
+body {
+    height: 100%;
+}
+
 body {
     font-family: var(--font-main);
     background-color: var(--bg-light);
     color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 
     /* padding-top: 80px; */
 }
 
+.mt-auto {
+    margin-top: auto !important;
+}
 
 /* HEADER */
 .navbar-main {
