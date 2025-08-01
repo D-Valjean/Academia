@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView, AttendanceListView, AddAttendanceView, evolution, ProfilePasswordChangeView, AddUserView, CustomloginView, UserDetailView, super_user_edit
+from .views import HomeView, RegisterView, ProfileView, CoursesView, CourseCreateView, ErrorView, CourseeditView, CourseDeleteView, CourseEnrollmentView, StudentlistMarkView, UpdateMarkView, AttendanceListView, AddAttendanceView, evolution, ProfilePasswordChangeView, AddUserView, CustomloginView, UserDetailView, super_user_edit
 # esto es para proteger las rutas de la web para que usuarios no autorizados no puedan acceder
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -7,12 +7,6 @@ from django.conf import settings
 urlpatterns = [
     # PAGINA DE INICIO
     path('', HomeView.as_view(), name='home'),
-
-    # PAGINA DE PRECIOS
-    path('pricing/', PricingView.as_view(), name='pricing'),
-
-    # PAGINA DE PREGUNTAS Y RESPUESTAS / PAGINA DE ACERCA DE (A CARGO DE LOS SEGUIDORES DEL CANAL)
-
     # PAGINAS DE LOGIN Y REGISTRO (VIDEO 5)
     path('register/', RegisterView.as_view(), name='register'),
 

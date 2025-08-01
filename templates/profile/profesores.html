@@ -16,6 +16,13 @@
 								{% endif %}
 								<span class="badge rounded-pill bg-light text-dark">{{ enrollment_count }}</span>
 							</a>
+							<a href="{% url 'list_attendance' course.id %}"
+							   class="btn btn-sm btn-warning float-end">
+								{% if course.status == 'P' %}
+									Asistencias
+								{% endif %}
+								<span class="badge rounded-pill bg-light text-dark">{{ enrollment_count }}</span>
+							</a>
 						</li>
 					{% endwith %}
 				{% endfor %}

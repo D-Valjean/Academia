@@ -136,6 +136,8 @@ class HomeView(TemplateView):
         ).name == 'estudiantes' else None
         teacher = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
         ).name == 'profesores' else None
+        director = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
+        ).name == 'director' else None
         courses = []
         notification = []
         if student:
@@ -163,6 +165,16 @@ class HomeView(TemplateView):
             students = sorted(
                 students, key=lambda x: x['student_average'], reverse=True)
             # students = list(set(students))  # Eliminar duplicados
+        elif director:
+            courses = Course.objects.all()
+            notification = Notifications.objects.filter(
+                user=director,).order_by('-id')[:5]
+            students = []
+            for course in courses:
+                registrations = Registration.objects.filter(course=course)
+                for registration in registrations:
+                    students.append(registration.student.get_full_name())
+            students = list(set(students))
         for item in courses:
             item.is_enrolled = True
             enrollment_count = Registration.objects.filter(course=item).count()
@@ -176,12 +188,6 @@ class HomeView(TemplateView):
             'students': students if teacher else None,
         })
         return context
-# PAGINA DE PRECIOS
-
-
-@add_group_name_to_context
-class PricingView(TemplateView):
-    template_name = 'pricing.html'
 
 
 class RegisterView(View):
@@ -420,11 +426,11 @@ class CourseCreateView(UserPassesTestMixin, CreateView):
 class CourseeditView(UserPassesTestMixin, UpdateView):
     model = Course
     form_class = CourseForm
-    template_name = 'edit_course.html'
+    template_name = 'cursos/edit_course.html'
     success_url = reverse_lazy('courses')
 
     def test_func(self):
-        return self.request.user.groups.filter(name='administrativos').exists()
+        return self.request.user.groups.filter(name='administrativos').exists() or self.request.user.groups.filter(name='director').exists()
 
     def handle_no_permission(self):
         return redirect('error')

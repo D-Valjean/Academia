@@ -18,11 +18,11 @@
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                     <h5 class="mb-4">Enlaces Rápidos</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Inicio</a></li>
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Cursos</a></li>
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Profesores</a></li>
+                        <li class="mb-2"><a href="{% url "home" %}" class="text-white text-decoration-none">Inicio</a></li>
+                        <li class="mb-2"><a href="{% url "courses" %}" class="text-white text-decoration-none">Cursos</a></li>
+                        {% comment %} <li class="mb-2"><a href="#" class="text-white text-decoration-none">Profesores</a></li>
                         <li class="mb-2"><a href="#" class="text-white text-decoration-none">Estudiantes</a></li>
-                        <li><a href="#" class="text-white text-decoration-none">Calendario</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Calendario</a></li> {% endcomment %}
                     </ul>
                 </div>
 
