@@ -51,6 +51,23 @@ def time_passed(fecha):
         return f"hace {dias} día{'s' if dias != 1 else ''}"
 
 
+def start_course():
+    courses = Course.objects.filter(status='I')
+    for course in courses:
+        if course.start_date <= timezone.now().date():
+            print(f"Empezando curso: {course.name}")
+            course.status = 'P'
+            course.save()
+
+
+def end_course():
+    courses = Course.objects.filter(status="P")
+    print(courses)
+    for course in courses:
+        if course.end_date is not None and course.end_date <= timezone.now().date():
+            print(f"Finalizando curso: {course.name}")
+            course.status = 'F'
+            course.save()
 # OBTENER COLOR Y GRUPO DE UN USUARIO
 
 
@@ -108,6 +125,8 @@ def add_group_name_to_context(view_class):
         except:
             estudiantes = 0
         joke = pyjokes.get_joke(language='es', category='neutral')
+        start_course()
+        end_course()
         print(joke)
         context = {
             'group_name': group_name,

@@ -14,7 +14,7 @@ urlpatterns = [
     path('profile/', login_required(ProfileView.as_view()), name='profile'),
 
     # PAGINAS QUE ADMINISTRAN LOS CURSOS: LA LISTA DE CURSOS - (LA CREACION DE CURSOS - LA EDICION DE CURSOS - LA ELIMINACION DE CURSOS) (VIDEO 10)
-    path('courses/', CoursesView.as_view(), name='courses'),
+    path('courses/', login_required(CoursesView.as_view()), name='courses'),
     path('courses/create/', login_required(CourseCreateView.as_view()),
          name='course_create'),
     path('courses/<int:pk>/edit/',
