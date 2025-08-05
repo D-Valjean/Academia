@@ -62,7 +62,6 @@ def start_course():
 
 def end_course():
     courses = Course.objects.filter(status="P")
-    print(courses)
     for course in courses:
         if course.end_date is not None and course.end_date <= timezone.now().date():
             print(f"Finalizando curso: {course.name}")
@@ -601,7 +600,7 @@ class AttendanceListView(ListView):
         course = Course.objects.get(id=self.kwargs['course_id'])
         students = Registration.objects.filter(course=course).values(
             'student__id', 'student__first_name', 'student__last_name', 'enabled')
-
+        print(students)
         all_dates = Attendance.objects.filter(course=course, date__isnull=False).values_list(
             'date', flat=True).distinct().order_by('date')
         remaining_classes = course.class_quantity - all_dates.count()
@@ -627,11 +626,9 @@ class AttendanceListView(ListView):
                     'attendance_status': attendance_status,
                     'enabled': student['enabled']
                 }
-
                 attendance_dict['attendance_data'].append(student_data)
 
             attendance_data.append(attendance_dict)
-
         context['course'] = course
         context['students'] = students
         context['attendance_data'] = attendance_data
@@ -812,12 +809,14 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
 @add_group_name_to_context
 class CustomloginView(LoginView):
     def form_valid(self, form):
-        response = super().form_valid(form)
-
         # Acceder al perfil del usuario
-        profile = self.request.user.profile
-
+        profile = form.get_user().profile
+        if not profile.active:
+            messages.error(
+                self.request, 'Tu cuenta ha sido desactivada. Contacta al administrador.')
+            return redirect('login')
         # Verificamos el valor del campo created_by_admin
+        response = super().form_valid(form)
         if profile.created_by_admin:
             messages.info(
                 self.request, 'BIENVENIDO, Cambie su contraseña ahora !!!')

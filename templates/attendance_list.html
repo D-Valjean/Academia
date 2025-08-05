@@ -37,11 +37,12 @@
 				<tbody>
 				{% for student in students %}
 					<tr>
-						{% if not student.enable %}
+						{% if not student.enabled %}
 							<td class="text-danger">{{ student.student__first_name }} {{ student.student__last_name }}
 								<span class="badge text-bg-danger">IRREGULAR</span></td>
 						{% else %}
-							<td>{{ student.student__first_name }} {{ student.student__last_name }}</td>
+							<td class="text-success">{{ student.student__first_name }} {{ student.student__last_name }}
+								<span class="badge text-bg-success">REGULAR</span></td>
 						{% endif %}
 						{% for item in attendance_data %}
 							{% for attendance in item.attendance_data %}

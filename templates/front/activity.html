@@ -49,58 +49,21 @@
                 <div class="card-body">
                     <div class="list-group list-group-flush">
                         {% for student in students%}
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <div class="position-relative me-3">
-                                        <img src="https://ui-avatars.com/api/?name={{student.student_name}}&background=random" class="rounded-circle" width="48" height="48">
-                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                            {% if not student.student_average == 0 %}
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <img src="https://ui-avatars.com/api/?name={{student.student_name}}&background=random" class="rounded-circle" width="48" height="48">
+                                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">{{student.student_name}} <span class="badge bg-primary rounded-pill">{{ forloop.counter0|add:1}}°</span></h6>
+                                            <small class="text-muted">{{student.couse_name}} - Promedio: {{student.student_average}}</small>
+                                        </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">{{student.student_name}} <span class="badge bg-primary rounded-pill">{{ forloop.counter0|add:1}}°</span></h6>
-                                        <small class="text-muted">{{student.couse_name}} - Promedio: {{student.student_average}}</small>
-                                    </div>
-                                </div>
-                            </a>
+                                </a>
+                            {% endif %}
                         {% endfor %}
-                        {% comment %} <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex align-items-center">
-                                <div class="position-relative me-3">
-                                    <img src="https://ui-avatars.com/api/?name=Maria+Lopez&background=random" class="rounded-circle" width="48" height="48">
-                                    <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">María López</h6>
-                                    <small class="text-muted">Diseño UX/UI - Promedio: 8.9</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill">2°</span>
-                            </div>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex align-items-center">
-                                <div class="position-relative me-3">
-                                    <img src="https://ui-avatars.com/api/?name=Carlos+Garcia&background=random" class="rounded-circle" width="48" height="48">
-                                    <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Carlos García</h6>
-                                    <small class="text-muted">Marketing Digital - Promedio: 8.7</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill">3°</span>
-                            </div>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex align-items-center">
-                                <div class="position-relative me-3">
-                                    <img src="https://ui-avatars.com/api/?name=Laura+Martinez&background=random" class="rounded-circle" width="48" height="48">
-                                    <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Laura Martínez</h6>
-                                    <small class="text-muted">Programación Web - Promedio: 8.5</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill">4°</span>
-                            </div>
-                        </a> {% endcomment %}
                     </div>
                 </div>
             </div>
