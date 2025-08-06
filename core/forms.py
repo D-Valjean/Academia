@@ -50,10 +50,15 @@ class CourseForm(forms.ModelForm):
         choices=Course.STATUS_CHOICES, initial='I', label='Estado')
     description = forms.CharField(widget=forms.Textarea(
         attrs={'rows': 3}), label='Descripción')
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}), label='Fecha de inicio', required=False)
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}), label='Fecha de finalización', required=False)
 
     class Meta:
         model = Course
-        fields = ['name', 'description', 'teacher', 'class_quantity', 'status']
+        fields = ['name', 'description', 'teacher',
+                  'class_quantity', 'status', 'start_date', 'end_date']
 
     helper = FormHelper()
     helper.layout = Layout(
@@ -62,6 +67,8 @@ class CourseForm(forms.ModelForm):
         Field('teacher'),
         Field('class_quantity'),
         Field('status'),
+        Field('start_date'),
+        Field('end_date'),
         Submit('submit', 'Submit')
     )
 

@@ -156,6 +156,7 @@ class HomeView(TemplateView):
         ).name == 'profesores' else None
         director = self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
         ).name == 'director' else None
+
         courses = []
         notification = []
         if student:
@@ -193,6 +194,11 @@ class HomeView(TemplateView):
                 for registration in registrations:
                     students.append(registration.student.get_full_name())
             students = list(set(students))
+        elif administrativos := self.request.user if self.request.user.is_authenticated and self.request.user.groups.first(
+        ).name == 'administrativos' else None:
+            courses = Course.objects.all()
+            notification = Notifications.objects.filter(
+                user=User.objects.get(groups__name='director'),).order_by('-id')[:5]
         for item in courses:
             item.is_enrolled = True
             enrollment_count = Registration.objects.filter(course=item).count()
@@ -416,7 +422,7 @@ class CourseCreateView(UserPassesTestMixin, CreateView):
     success_url = reverse_lazy('courses')
 
     def test_func(self):
-        return self.request.user.groups.filter(name='administrativos').exists()
+        return self.request.user.groups.filter(name='administrativos').exists() or self.request.user.groups.filter(name='director').exists()
 
     def handle_no_permission(self):
         return redirect('error')
@@ -430,6 +436,13 @@ class CourseCreateView(UserPassesTestMixin, CreateView):
             status='A'
         )
         notication.save()
+        director = User.objects.get(groups__name='director')
+        director_notification = Notifications(
+            user=director,
+            message=f'Se ha creado un nuevo curso: {form.instance.name}, asignado a: {form.instance.teacher.get_full_name()}',
+            status='A'
+        )
+        director_notification.save()
         return super().form_valid(form)
 
     def form_invalid(self, form):
