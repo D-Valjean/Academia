@@ -15,7 +15,7 @@
 		<table class="table">
 			<thead>
 			<tr>
-				<th scope="col">Alumno</th>
+				<th scope="col" style="background-color: #6809c0ff">Alumno</th>
 				{% if not course.status == 'I'  %}
 					<th scope="col">Evaluación 1</th>
 					<th scope="col">Evaluación 2</th>
@@ -29,14 +29,16 @@
 			{% for data in student_data %}
 				<tr>
 					<th scope="row">{{ data.name }}</th>
-					<td>{{ data.mark_1 }}</td>
-					<td>{{ data.mark_2 }}</td>
-					<td>{{ data.mark_3 }}</td>
-					<td><strong>{{ data.average }}</strong></td>
-					<td>
-						<a class="btn btn-sm btn-primary {% if course.status == 'I' or course.status == 'F' %}disabled{% endif %}"
-						   href="{% url 'update_mark' data.mark_id %}">Agregar Nota</a>
-					</td>
+					{% if not course.status == 'I'  %}
+						<td>{{ data.mark_1 }}</td>
+						<td>{{ data.mark_2 }}</td>
+						<td>{{ data.mark_3 }}</td>
+						<td><strong>{{ data.average }}</strong></td>
+						<td>
+							<a class="btn btn-sm btn-primary {% if course.status == 'I' or course.status == 'F' %}disabled{% endif %}"
+							href="{% url 'update_mark' data.mark_id %}">Agregar Nota</a>
+						</td>
+					{% endif %}
 				</tr>
 			{% endfor %}
 			</tbody>

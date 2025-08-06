@@ -600,7 +600,6 @@ class AttendanceListView(ListView):
         course = Course.objects.get(id=self.kwargs['course_id'])
         students = Registration.objects.filter(course=course).values(
             'student__id', 'student__first_name', 'student__last_name', 'enabled')
-        print(students)
         all_dates = Attendance.objects.filter(course=course, date__isnull=False).values_list(
             'date', flat=True).distinct().order_by('date')
         remaining_classes = course.class_quantity - all_dates.count()
@@ -618,6 +617,14 @@ class AttendanceListView(ListView):
                     attendance = Attendance.objects.get(
                         course=course, student_id=student['student__id'], date=date)
                     attendance_status = attendance.present
+                    total_attendance_false = Attendance.objects.filter(
+                        student_id=student['student__id'], course=course, present=False).count()
+                    absences_percent = (
+                        total_attendance_false / course.class_quantity) * 100
+                    if absences_percent > 20:
+                        student['enabled'] = False
+                    else:
+                        student['enabled'] = True
                 except Attendance.DoesNotExist:
                     attendance_status = False
 
